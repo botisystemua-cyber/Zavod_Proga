@@ -319,16 +319,598 @@
     background: rgba(20, 184, 166, 0.05);
   }
   .checkbox-row input { margin-top: 2px; flex-shrink: 0; }
+
+  /* HAMBURGER */
+  .hamburger {
+    width: 32px; height: 32px;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    padding: 0;
+  }
+  .hamburger span {
+    width: 16px; height: 1.5px; background: var(--text);
+    transition: all 0.2s;
+  }
+  .hamburger:hover { border-color: var(--accent); }
+  .hamburger:hover span { background: var(--accent); }
+
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+
+  /* DRAWER */
+  .drawer-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 99;
+    display: none;
+  }
+  .drawer-overlay.open { display: block; }
+  .drawer {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 320px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 100;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .drawer-header .user {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .drawer-header .avatar {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+  }
+  .drawer-header .user-info .name { font-weight: 600; font-size: 13px; }
+  .drawer-header .user-info .role { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .drawer-close {
+    background: transparent; border: 0; color: var(--muted);
+    font-size: 20px; cursor: pointer; padding: 0; width: 24px; height: 24px;
+  }
+  .drawer-close:hover { color: var(--text); }
+
+  .drawer-section { padding: 10px 0; }
+  .drawer-section-title {
+    padding: 6px 20px;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+  }
+  .menu-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    color: var(--text);
+  }
+  .menu-item:hover { background: var(--surface-2); border-left-color: var(--accent); }
+  .menu-item.active { background: var(--surface-2); border-left-color: var(--accent); }
+  .menu-item .icon {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 13px;
+    text-align: center;
+    margin-top: 1px;
+  }
+  .menu-item .content .title { font-size: 13px; font-weight: 500; }
+  .menu-item .content .desc { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+  .menu-item .badge-mini {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    align-self: center;
+  }
+
+  /* CHAT MODAL */
+  .chat-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .chat-overlay.open { display: flex; }
+  .chat-panel {
+    width: 100%;
+    max-width: 720px;
+    height: 85vh;
+    max-height: 760px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--surface-2);
+  }
+  .chat-header .chat-title {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .chat-header .chat-title strong { font-size: 13px; }
+  .chat-header .chat-title .chat-sub { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .chat-msg {
+    max-width: 85%;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .chat-msg.user {
+    align-self: flex-end;
+    background: var(--accent-dim);
+    color: #fff;
+  }
+  .chat-msg.ai {
+    align-self: flex-start;
+    background: var(--surface-2);
+    border-left: 2px solid var(--accent);
+  }
+  .chat-msg .who {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .chat-msg.user .who { color: rgba(255,255,255,0.7); }
+  .chat-msg .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .chat-input-wrap {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 8px;
+    background: var(--bg);
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .chat-input:focus { outline: none; border-color: var(--accent); }
+
+  /* FAB CHAT */
+  .fab-chat {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    z-index: 60;
+    background: var(--accent);
+    color: var(--bg);
+    border: 0;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    letter-spacing: 0.02em;
+  }
+  .fab-chat:hover { background: var(--accent-dim); }
+  .fab-chat .fab-dot {
+    width: 6px; height: 6px; background: #fff; border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+  }
+
+  /* INTRO */
+  .intro-screen {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 120px;
+  }
+  .intro-screen.hidden { display: none; }
+  .intro-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .intro-title .accent { color: var(--accent); }
+  .intro-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .intro-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 22px;
+    margin-bottom: 14px;
+  }
+  .intro-block h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .intro-block p { font-size: 13.5px; line-height: 1.65; color: var(--text); margin-bottom: 10px; }
+  .intro-block p:last-child { margin-bottom: 0; }
+  .intro-block .highlight {
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+    color: var(--text);
+    font-weight: 500;
+    margin: 14px 0;
+  }
+  .scenario-steps-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .scenario-step-mini {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex; gap: 10px;
+    align-items: flex-start;
+  }
+  .scenario-step-mini .num {
+    width: 22px; height: 22px;
+    background: var(--surface-2);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+  .scenario-step-mini .label { font-size: 12px; font-weight: 500; }
+  .scenario-step-mini .desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .menu-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 6px;
+  }
+  .menu-preview-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex; gap: 10px;
+    align-items: flex-start;
+  }
+  .menu-preview-item .mp-icon {
+    color: var(--accent); font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; width: 20px; flex-shrink: 0;
+  }
+  .menu-preview-item .mp-title { font-size: 12.5px; font-weight: 500; }
+  .menu-preview-item .mp-desc { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+
+  .intro-cta {
+    display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap;
+  }
+  .intro-cta .btn { font-size: 13px; padding: 10px 20px; }
+  .intro-cta .btn.primary { font-size: 14px; padding: 12px 28px; }
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <div class="brand"><span class="accent">CNC AI</span> ТЕХНОЛОГ</div>
+  <div class="topbar-left">
+    <button class="hamburger" onclick="toggleDrawer()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="brand"><span class="accent">CNC AI</span> ТЕХНОЛОГ</div>
+  </div>
   <div class="meta" id="topbar-meta">ПРОЄКТ #2026-04-24-001 · ОПЕРАТОР: ПОПОВИЧ Р.</div>
 </header>
 
-<div class="progress-bar">
+<!-- DRAWER MENU -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="user">
+      <div class="avatar">Ю</div>
+      <div class="user-info">
+        <div class="name">Юрій</div>
+        <div class="role">ТЕХНОЛОГ · ВТВ</div>
+      </div>
+    </div>
+    <button class="drawer-close" onclick="toggleDrawer()">×</button>
+  </div>
+
+  <div class="drawer-section">
+    <div class="drawer-section-title">Робоча зона</div>
+    <div class="menu-item" onclick="menuClick('home')">
+      <div class="icon">⌂</div>
+      <div class="content">
+        <div class="title">Головна</div>
+        <div class="desc">Панель: останні проєкти, статус верстатів, нагадування</div>
+      </div>
+    </div>
+    <div class="menu-item" onclick="menuClick('new-project')">
+      <div class="icon">+</div>
+      <div class="content">
+        <div class="title">Новий проєкт</div>
+        <div class="desc">Створити проєкт оптимізації обробки. Wizard з 3 кроків</div>
+      </div>
+    </div>
+    <div class="menu-item active" onclick="menuClick('current')">
+      <div class="icon">▸</div>
+      <div class="content">
+        <div class="title">Поточний проєкт</div>
+        <div class="desc">Шток ø90 — PINACHO STH 400</div>
+      </div>
+      <div class="badge-mini">КРОК 1/8</div>
+    </div>
+    <div class="menu-item" onclick="menuClick('projects')">
+      <div class="icon">≡</div>
+      <div class="content">
+        <div class="title">Мої проєкти</div>
+        <div class="desc">Список усіх проєктів з фільтрами по статусу і верстату</div>
+      </div>
+      <div class="badge-mini">12</div>
+    </div>
+  </div>
+
+  <div class="drawer-section">
+    <div class="drawer-section-title">AI</div>
+    <div class="menu-item" onclick="openChat()">
+      <div class="icon">✦</div>
+      <div class="content">
+        <div class="title">Чат з AI-асистентом</div>
+        <div class="desc">Питання щодо обробки, режимів різання, інструменту 24/7</div>
+      </div>
+      <div class="badge-mini">●</div>
+    </div>
+    <div class="menu-item" onclick="menuClick('knowledge')">
+      <div class="icon">◆</div>
+      <div class="content">
+        <div class="title">База знань</div>
+        <div class="desc">Затверджені проєкти, реальний досвід заводу — контекст для AI</div>
+      </div>
+      <div class="badge-mini">8</div>
+    </div>
+  </div>
+
+  <div class="drawer-section">
+    <div class="drawer-section-title">Довідники</div>
+    <div class="menu-item" onclick="menuClick('machines')">
+      <div class="icon">▣</div>
+      <div class="content">
+        <div class="title">Верстати</div>
+        <div class="desc">Паспорти всіх верстатів цеху, ТО, завантаженість</div>
+      </div>
+      <div class="badge-mini">3</div>
+    </div>
+    <div class="menu-item" onclick="menuClick('parts')">
+      <div class="icon">◫</div>
+      <div class="content">
+        <div class="title">Деталі</div>
+        <div class="desc">Креслення з розпізнаною геометрією, історія обробки</div>
+      </div>
+      <div class="badge-mini">47</div>
+    </div>
+    <div class="menu-item" onclick="menuClick('tools')">
+      <div class="icon">⊟</div>
+      <div class="content">
+        <div class="title">Інструмент</div>
+        <div class="desc">Каталог пластин і тримачів, залишки, стійкість</div>
+      </div>
+      <div class="badge-mini">128</div>
+    </div>
+    <div class="menu-item" onclick="menuClick('materials')">
+      <div class="icon">∷</div>
+      <div class="content">
+        <div class="title">Матеріали</div>
+        <div class="desc">Сталі, твердість, рекомендовані режими</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-section">
+    <div class="drawer-section-title">Аналітика та робота</div>
+    <div class="menu-item" onclick="menuClick('reports')">
+      <div class="icon">∿</div>
+      <div class="content">
+        <div class="title">Звіти і статистика</div>
+        <div class="desc">Скільки зекономлено часу, топ оптимізацій, точність AI</div>
+      </div>
+    </div>
+    <div class="menu-item" onclick="menuClick('schedule')">
+      <div class="icon">▤</div>
+      <div class="content">
+        <div class="title">Планування</div>
+        <div class="desc">Графік завантаження верстатів, дедлайни проєктів</div>
+      </div>
+    </div>
+    <div class="menu-item" onclick="menuClick('tutorial')">
+      <div class="icon">?</div>
+      <div class="content">
+        <div class="title">Навчання</div>
+        <div class="desc">8 уроків як користуватися додатком і коли AI помиляється</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-section">
+    <div class="drawer-section-title">Системне</div>
+    <div class="menu-item" onclick="menuClick('settings')">
+      <div class="icon">⚙</div>
+      <div class="content">
+        <div class="title">Налаштування</div>
+        <div class="desc">Підключення Claude API, S3, постпроцесори ЧПУ</div>
+      </div>
+    </div>
+    <div class="menu-item" onclick="menuClick('logout')">
+      <div class="icon">⏻</div>
+      <div class="content">
+        <div class="title">Вийти</div>
+        <div class="desc">Завершити сесію</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- AI CHAT MODAL -->
+<div class="chat-overlay" id="chat-overlay" onclick="if(event.target===this)closeChat()">
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-title">
+        <div style="width:32px;height:32px;background:var(--accent);color:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">AI</div>
+        <div>
+          <strong>AI-асистент технолога</strong>
+          <div class="chat-sub">Claude Opus 4.7 · контекст: поточний проєкт</div>
+        </div>
+      </div>
+      <button class="drawer-close" onclick="closeChat()">×</button>
+    </div>
+    <div class="chat-body" id="chat-body">
+      <div class="chat-msg ai">
+        <div class="who">AI · 14:02</div>
+        Доброго дня, Юрію. Я бачу, ви відкрили проєкт «Шток ø90 — PINACHO STH 400». Чим можу допомогти?
+      </div>
+      <div class="chat-msg ai">
+        <div class="who">AI · підказка</div>
+        Я можу: пояснити будь-яку рекомендацію техкарти, порахувати режими різання за вашими параметрами, перевірити сумісність матеріалу та інструменту, підібрати аналог пластини, відповісти на питання з довідника.
+      </div>
+      <div class="chat-msg user">
+        <div class="who">ВИ · 14:14</div>
+        Чому ти рекомендуєш CBN а не звичайний твердосплав?
+      </div>
+      <div class="chat-msg ai">
+        <div class="who">AI · 14:14</div>
+        Бо ваша заготовка гартована до 56-60 HRC по всій довжині (відповідь Q3 в опитувальнику). Звичайний твердий сплав KCU10/PC втрачає різальну здатність уже при HRC&gt;45 — пластина руйнується за перші 30-60 секунд. CBN-нітрид бору розрахований на HRC 45-65, це стандартна практика для hard turning.
+        <br><br>Конкретні марки під ваш матеріал C45E:<br>
+        <span class="mono">Sandvik CB7015 (чорнова) · CB7115 (чистова)</span><br>
+        <span class="mono">Kennametal KB5630 · KB5625</span><br>
+        <span class="mono">Mitsubishi MB825 · MB710</span>
+      </div>
+      <div class="chat-msg user">
+        <div class="who">ВИ · 14:15</div>
+        А якщо у нас зараз тільки KCU10? Скільки часу витримає?
+      </div>
+      <div class="chat-msg ai">
+        <div class="who">AI · 14:15</div>
+        Не рекомендую запускати взагалі. На HRC 56-60 з KCU10 ймовірний сценарій:
+        <br>· перший прохід — пластина працює 10-30 сек з різким нагрівом;<br>
+        · скол різальної кромки → задирки на деталі → можливий брак ø80 h9;<br>
+        · ризик травми при різкому руйнуванні пластини на високих обертах.
+        <br><br>Якщо CBN недоступний просто зараз — пропоную відкласти проєкт на 2-3 дні до постачання. Альтернатива на крайній випадок — кераміка змішаного типу (наприклад Kennametal KY4400), вона дешевша за CBN, але потребує ще нижчих подач.
+      </div>
+      <div class="chat-msg user">
+        <div class="who">ВИ · 14:16</div>
+        Замовив CBN. Прийде завтра. А поки покажи мені на якому верстаті можна обробляти ще таку деталь?
+      </div>
+      <div class="chat-msg ai">
+        <div class="who">AI · 14:16</div>
+        Перевіряю довідник верстатів цеху…
+        <br><br>З 3 наявних токарних верстатів обробка штока 879 мм можлива на:
+        <br><br><strong>1. PINACHO STH 400-105×3000</strong> — основний вибір. РМЦ 3000 з запасом, потужність 26 кВт, є люнет.
+        <br><strong>2. HAAS ST-30Y</strong> — РМЦ 1244, <span style="color:var(--err);">не підходить</span> (деталь 879+оснастка не вміщається).
+        <br><strong>3. DMG CTX 310 ECO</strong> — РМЦ 800, <span style="color:var(--err);">не підходить</span>.
+        <br><br>Рекомендація: продовжуйте з PINACHO. Альтернатив немає.
+      </div>
+    </div>
+    <div class="chat-input-wrap">
+      <input class="chat-input" placeholder="Запитайте що-небудь про обробку, інструмент, режими…" onkeydown="if(event.key==='Enter')fakeSend()">
+      <button class="btn primary" onclick="fakeSend()">Надіслати</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAB CHAT BUTTON -->
+<button class="fab-chat" id="fab-chat" onclick="openChat()" style="display:none;">
+  <span class="fab-dot"></span>
+  AI-асистент
+</button>
+
+<!-- INTRO SCREEN -->
+<section class="intro-screen" id="intro">
+  <div class="intro-title">CNC AI Технолог · <span class="accent">для Юри</span></div>
+  <div class="intro-subtitle">Помічник технолога з оптимізації токарної обробки на ЧПУ · v0.1 demo</div>
+
+  <div class="intro-block">
+    <h3>Що це за додаток</h3>
+    <p>Робочий інструмент для технолога-токаря: автоматизує найдовшу частину роботи — складання технологічної карти. Технолог завантажує креслення, AI розпізнає геометрію і допуски, ставить уточнюючі питання, потім генерує маршрут обробки і режими різання. Все, що раніше займало 4-8 годин, тепер робиться за 1-2 хвилини, але залишається під повним контролем технолога.</p>
+    <div class="highlight">Ключовий принцип: AI пропонує — технолог вирішує. Жодна рекомендація не йде в роботу без вашої перевірки і тестування на верстаті.</div>
+    <p>Кожен затверджений проєкт зберігається в базу знань заводу. Наступні задачі AI рахує вже з урахуванням реального досвіду — як працювали ваші пластини, де були вібрації, які режими насправді витримали тест.</p>
+  </div>
+
+  <div class="intro-block">
+    <h3>Сценарій, який ви зараз пройдете</h3>
+    <p style="margin-bottom: 14px;">Реальний приклад: оптимізація обробки штока ø90 на верстаті PINACHO STH 400. Поточний час обробки — 100 хвилин. Завдання — скоротити.</p>
+    <div class="scenario-steps-preview">
+      <div class="scenario-step-mini"><div class="num">1</div><div><div class="label">Верстат</div><div class="desc">Паспорт PINACHO STH 400 вже в системі</div></div></div>
+      <div class="scenario-step-mini"><div class="num">2</div><div><div class="label">Креслення</div><div class="desc">AI розпізнає Шток.pdf — розміри, допуски, матеріал</div></div></div>
+      <div class="scenario-step-mini"><div class="num">3</div><div><div class="label">Задача</div><div class="desc">Поточний час 100 хв, партія 50, інструмент</div></div></div>
+      <div class="scenario-step-mini"><div class="num">4</div><div><div class="label">Уточнення</div><div class="desc">14 питань від AI — твердість, базування, ЧПУ</div></div></div>
+      <div class="scenario-step-mini"><div class="num">5</div><div><div class="label">Розрахунок</div><div class="desc">AI генерує техкарту з валідацією</div></div></div>
+      <div class="scenario-step-mini"><div class="num">6</div><div><div class="label">Техкарта</div><div class="desc">Маршрут, режими, нормування, безпека</div></div></div>
+      <div class="scenario-step-mini"><div class="num">7</div><div><div class="label">Тест</div><div class="desc">Реальні заміри першої деталі</div></div></div>
+      <div class="scenario-step-mini"><div class="num">8</div><div><div class="label">Затвердження</div><div class="desc">У базу знань для майбутніх проєктів</div></div></div>
+    </div>
+  </div>
+
+  <div class="intro-block">
+    <h3>Меню додатку (натисніть ☰ ліворуч угорі)</h3>
+    <p style="margin-bottom: 14px;">У повноцінному додатку доступні такі розділи. У цій демо-версії функції описані, але не виконуються — натискання покаже текст-пояснення.</p>
+    <div class="menu-preview">
+      <div class="menu-preview-item"><div class="mp-icon">⌂</div><div><div class="mp-title">Головна</div><div class="mp-desc">Останні проєкти, статус верстатів, нагадування про дедлайни</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">+</div><div><div class="mp-title">Новий проєкт</div><div class="mp-desc">Wizard з 3 кроків: верстат → деталь → задача</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">≡</div><div><div class="mp-title">Мої проєкти</div><div class="mp-desc">Список усіх проєктів з фільтрами по статусу</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">✦</div><div><div class="mp-title">AI-асистент</div><div class="mp-desc">Чат 24/7: режими, інструмент, аналоги пластин</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">◆</div><div><div class="mp-title">База знань</div><div class="mp-desc">Затверджені проєкти — реальний досвід заводу</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">▣</div><div><div class="mp-title">Верстати</div><div class="mp-desc">Паспорти, ТО, поточна завантаженість</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">◫</div><div><div class="mp-title">Деталі</div><div class="mp-desc">Креслення з розпізнаною геометрією</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">⊟</div><div><div class="mp-title">Інструмент</div><div class="mp-desc">Каталог пластин, залишки на складі, стійкість</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">∷</div><div><div class="mp-title">Матеріали</div><div class="mp-desc">Сталі, твердість, рекомендовані режими</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">∿</div><div><div class="mp-title">Звіти</div><div class="mp-desc">Зекономлено часу, точність AI, топ оптимізацій</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">▤</div><div><div class="mp-title">Планування</div><div class="mp-desc">Графік завантаження верстатів, дедлайни</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">?</div><div><div class="mp-title">Навчання</div><div class="mp-desc">Як користуватися та коли AI може помилятися</div></div></div>
+      <div class="menu-preview-item"><div class="mp-icon">⚙</div><div><div class="mp-title">Налаштування</div><div class="mp-desc">Підключення Claude API, S3, постпроцесори ЧПУ</div></div></div>
+    </div>
+  </div>
+
+  <div class="intro-cta">
+    <button class="btn primary" onclick="startScenario()">Розпочати сценарій →</button>
+    <button class="btn" onclick="toggleDrawer()">Відкрити меню</button>
+    <button class="btn" onclick="openChat()">Спробувати AI-чат</button>
+  </div>
+</section>
+
+<div class="progress-bar" id="progress-bar" style="display:none;">
   <div class="progress-steps" id="progress-steps">
     <div class="step-item active" data-step="1"><div class="step-num">1</div><div class="step-label">Верстат</div></div>
     <div class="step-item" data-step="2"><div class="step-num">2</div><div class="step-label">Креслення</div></div>
@@ -922,11 +1504,27 @@
 
 </main>
 
-<div class="footer-nav">
+<div class="footer-nav" id="footer-nav" style="display:none;">
   <div class="footer-nav-inner">
     <button class="btn" id="btn-back">← Назад</button>
     <div class="footer-status" id="footer-status">КРОК 1 / 8</div>
     <button class="btn primary" id="btn-next">Далі →</button>
+  </div>
+</div>
+
+<!-- MENU INFO MODAL (shown when clicking inactive menu items) -->
+<div class="chat-overlay" id="info-overlay" onclick="if(event.target===this)closeInfo()">
+  <div class="chat-panel" style="height: auto; max-height: 80vh;">
+    <div class="chat-header">
+      <div class="chat-title">
+        <strong id="info-title">Розділ</strong>
+      </div>
+      <button class="drawer-close" onclick="closeInfo()">×</button>
+    </div>
+    <div style="padding: 20px; overflow-y: auto;" id="info-body"></div>
+    <div style="padding: 12px 16px; border-top: 1px solid var(--border); text-align: right;">
+      <button class="btn primary" onclick="closeInfo()">Зрозуміло</button>
+    </div>
   </div>
 </div>
 
@@ -1052,6 +1650,111 @@ function startCalculation() {
 function approveProject() {
   document.getElementById('approve-result').style.display = 'block';
   document.getElementById('topbar-meta').textContent = 'ПРОЄКТ #2026-04-24-001 · СТАТУС: APPROVED';
+}
+
+/* INTRO → SCENARIO */
+function startScenario() {
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('progress-bar').style.display = 'block';
+  document.getElementById('main').style.display = 'block';
+  document.getElementById('footer-nav').style.display = 'block';
+  document.getElementById('fab-chat').style.display = 'flex';
+  currentStep = 1;
+  renderStep();
+}
+function backToIntro() {
+  document.getElementById('intro').style.display = 'block';
+  document.getElementById('progress-bar').style.display = 'none';
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('footer-nav').style.display = 'none';
+  document.getElementById('fab-chat').style.display = 'none';
+  closeDrawer();
+  window.scrollTo({ top: 0 });
+}
+
+/* hide main until scenario starts */
+document.getElementById('main').style.display = 'none';
+
+/* DRAWER */
+function toggleDrawer() {
+  const d = document.getElementById('drawer');
+  const o = document.getElementById('drawer-overlay');
+  d.classList.toggle('open');
+  o.classList.toggle('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+/* CHAT */
+function openChat() {
+  document.getElementById('chat-overlay').classList.add('open');
+  closeDrawer();
+  setTimeout(() => {
+    const body = document.getElementById('chat-body');
+    body.scrollTop = body.scrollHeight;
+  }, 50);
+}
+function closeChat() {
+  document.getElementById('chat-overlay').classList.remove('open');
+}
+function fakeSend() {
+  const input = document.querySelector('.chat-input');
+  const txt = input.value.trim();
+  if (!txt) return;
+  const body = document.getElementById('chat-body');
+  const userMsg = document.createElement('div');
+  userMsg.className = 'chat-msg user';
+  userMsg.innerHTML = '<div class="who">ВИ · зараз</div>' + txt.replace(/</g, '&lt;');
+  body.appendChild(userMsg);
+  input.value = '';
+  body.scrollTop = body.scrollHeight;
+  setTimeout(() => {
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'chat-msg ai';
+    aiMsg.innerHTML = '<div class="who">AI · друкує…</div><span class="spinner" style="width:14px;height:14px;border-width:2px;"></span>';
+    body.appendChild(aiMsg);
+    body.scrollTop = body.scrollHeight;
+    setTimeout(() => {
+      aiMsg.innerHTML = '<div class="who">AI · зараз</div>Це демо-режим — мене ще не підключено до реального API. У повноцінному додатку я відповім на ваше питання з урахуванням контексту проєкту, бази знань і довідників за 2-5 секунд.';
+      body.scrollTop = body.scrollHeight;
+    }, 1200);
+  }, 400);
+}
+
+/* MENU CLICK */
+const MENU_INFO = {
+  'home': { title: 'Головна', body: 'Дашборд: 4 stat-картки (верстати, деталі, проєкти, зекономлено хвилин), список останніх проєктів з бейджами статусу, швидкі дії (новий проєкт, додати креслення), стрічка нагадувань (тести, що чекають затвердження). У демо переходить на Головну панель додатку.' },
+  'new-project': { title: 'Новий проєкт', body: 'Wizard з 3 кроків:<br>1. Назва + вибір верстата зі списку (або «додати новий»)<br>2. Вибір деталі з бази або завантаження нового креслення (через AI-розпізнавання)<br>3. Поточний час, партія, інструмент, примітки<br>Після створення проєкт переходить у статус DRAFT і відкривається на кроці уточнюючих питань.' },
+  'current': { title: 'Поточний проєкт', body: 'Ви зараз на цьому розділі. Сценарій оптимізації штока ø90 на PINACHO STH 400. Меню підсвічує крок, на якому знаходитеся.' },
+  'projects': { title: 'Мої проєкти', body: 'Повний список усіх проєктів з фільтрами:<br>· По статусу (DRAFT, AI_REVIEW, TESTING, APPROVED і т.д.)<br>· По верстату<br>· По матеріалу<br>· По даті<br>Кожна картка показує економію часу і поточний статус. Можна групувати по тижнях.' },
+  'knowledge': { title: 'База знань', body: '8 затверджених проєктів — це реальний досвід заводу, який AI використовує як контекст для нових задач. Тут ви бачите:<br>· Прогноз AI vs реальний час по кожному проєкту<br>· Коментарі технологів («вібрації при S>0.12», «ЗОР зняти на CBN»)<br>· Точність AI — середня похибка<br>· Загальну економію в годинах і грошах' },
+  'machines': { title: 'Верстати', body: 'Довідник усіх верстатів цеху. По кожному:<br>· Паспорт з технічними параметрами<br>· Поточна завантаженість і графік<br>· Історія ТО і поломок<br>· Сумісні матеріали і деталі<br>· Файл паспорту в S3<br>Можна додати новий верстат через AI-розпізнавання паспорту PDF.' },
+  'parts': { title: 'Деталі', body: 'Усі деталі, з якими працював цех. По кожній:<br>· Креслення (PDF/PNG)<br>· Розпізнана геометрія: ступені, допуски, різьби, канавки<br>· Матеріал, маса, шорсткість<br>· Список проєктів, де ця деталь оброблялася<br>· Фото готової деталі для контролю' },
+  'tools': { title: 'Інструмент', body: 'Каталог тримачів і пластин:<br>· Поточні залишки на складі<br>· Стійкість (за реальними даними з тестів)<br>· Сумісність з матеріалами<br>· Замовлення і постачальники<br>· Аналоги (Sandvik ↔ Kennametal ↔ TaeguTec)<br>AI пропонує заміну, якщо потрібної пластини немає на складі.' },
+  'materials': { title: 'Матеріали', body: 'Довідник марок сталі:<br>· Хімічний склад<br>· Твердість в різних станах (сирий / нормалізований / гартований)<br>· Рекомендовані пари «матеріал ↔ пластина»<br>· Базові режими різання<br>· Застереження (наприклад, для нержавійки — не KCU10)' },
+  'reports': { title: 'Звіти і статистика', body: 'Аналітика для керівника:<br>· Скільки часу і грошей зекономлено за період<br>· Точність AI-прогнозів (середня похибка %)<br>· Топ-10 найефективніших оптимізацій<br>· Рейтинг технологів за кількістю затверджених проєктів<br>· Експорт в Excel і PDF' },
+  'schedule': { title: 'Планування', body: 'Гант-діаграма завантаження верстатів:<br>· Який проєкт на якому верстаті коли<br>· Дедлайни замовлень<br>· Перетин з ТО<br>· Перерозподіл при затримках<br>AI підказує оптимальний верстат для нової задачі за поточним графіком.' },
+  'tutorial': { title: 'Навчання', body: '8 уроків з прогрес-баром:<br>1. Вступ і ключовий принцип<br>2. Як завантажити креслення<br>3. Як читати уточнюючі питання<br>4. Як перевіряти AI-техкарту<br>5. Що робити при тесті<br>6. Як писати корисні коментарі<br>7. Коли AI помиляється і як це бачити<br>8. Як база знань робить AI точнішим' },
+  'settings': { title: 'Налаштування', body: 'Технічні налаштування:<br>· Підключення Claude API (ANTHROPIC_API_KEY)<br>· Сховище S3 для креслень і паспортів<br>· Постпроцесори ЧПУ (Fanuc, Fagor, Siemens)<br>· Шаблон фірмового PDF для техкарт<br>· Користувачі і права (технолог / нач. ВТВ / адмін)<br>· Резервне копіювання БД' },
+  'logout': { title: 'Вихід', body: 'У реальному додатку — вихід із системи. У демо-версії просто закриється меню.' },
+};
+function menuClick(key) {
+  if (key === 'current') { closeDrawer(); return; }
+  if (key === 'home') { closeDrawer(); backToIntro(); return; }
+  if (key === 'logout') { closeDrawer(); return; }
+  const info = MENU_INFO[key];
+  if (!info) return;
+  document.getElementById('info-title').textContent = info.title;
+  document.getElementById('info-body').innerHTML =
+    '<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Опис функції · в демо не виконується</div>' +
+    '<div style="font-size:13.5px;line-height:1.65;">' + info.body + '</div>';
+  document.getElementById('info-overlay').classList.add('open');
+  closeDrawer();
+}
+function closeInfo() {
+  document.getElementById('info-overlay').classList.remove('open');
 }
 </script>
 
