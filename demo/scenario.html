@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNC AI Технолог — Робочий процес</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface-2: #1a2235;
+    --border: #1f2937;
+    --text: #d1d5db;
+    --muted: #6b7280;
+    --accent: #14b8a6;
+    --accent-dim: #0f766e;
+    --warn: #d97706;
+    --err: #dc2626;
+    --ok: #059669;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .mono { font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace; }
+
+  /* HEADER */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar .brand { font-weight: 600; letter-spacing: -0.01em; font-size: 13px; }
+  .topbar .brand .accent { color: var(--accent); }
+  .topbar .meta { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    overflow-x: auto;
+  }
+  .progress-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: max-content;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    flex-shrink: 0;
+  }
+  .step-item + .step-item { margin-left: 8px; }
+  .step-item + .step-item::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--border);
+    margin-right: 8px;
+  }
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--muted);
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .step-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .step-item.active .step-num { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+  .step-item.active .step-label { color: var(--text); font-weight: 500; }
+  .step-item.done .step-num { background: var(--surface-2); border-color: var(--accent); color: var(--accent); }
+  .step-item.done .step-label { color: var(--text); }
+
+  /* MAIN */
+  main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 20px 100px;
+  }
+  .step-screen { display: none; }
+  .step-screen.active { display: block; }
+  .step-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .step-desc {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  /* PANELS */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .panel-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .panel-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 13px;
+  }
+  .panel-row:last-child { border-bottom: 0; }
+  .panel-row .label { color: var(--muted); }
+  .panel-row .value { color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
+
+  /* TABLE */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .data-table th, .data-table td {
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    text-align: left;
+  }
+  .data-table th {
+    background: var(--surface-2);
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+  }
+  .data-table tr:hover { background: var(--surface-2); }
+
+  /* BUTTONS */
+  .btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+  }
+  .btn.primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); }
+  .btn.danger {
+    background: transparent;
+    border-color: var(--err);
+    color: var(--err);
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* FORM */
+  .form-row { margin-bottom: 14px; }
+  .form-label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .form-textarea { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  /* STATUS */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--border);
+  }
+  .badge.ok { color: var(--ok); border-color: var(--ok); }
+  .badge.warn { color: var(--warn); border-color: var(--warn); }
+  .badge.err { color: var(--err); border-color: var(--err); }
+  .badge.accent { color: var(--accent); border-color: var(--accent); }
+  .badge .dot { width: 6px; height: 6px; background: currentColor; border-radius: 50%; display: inline-block; }
+
+  /* ALERTS */
+  .alert {
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    font-size: 12.5px;
+    border-left: 3px solid;
+    background: var(--surface);
+  }
+  .alert.warn { border-color: var(--warn); }
+  .alert.warn .alert-title { color: var(--warn); }
+  .alert.err { border-color: var(--err); }
+  .alert.err .alert-title { color: var(--err); }
+  .alert.ok { border-color: var(--ok); }
+  .alert.ok .alert-title { color: var(--ok); }
+  .alert .alert-title { font-weight: 600; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .alert .alert-body { color: var(--text); }
+
+  /* FOOTER NAV */
+  .footer-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 20px;
+    z-index: 50;
+  }
+  .footer-nav-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+  }
+  .footer-status { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* SPINNER */
+  .spinner {
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* LOG */
+  .log {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    line-height: 1.7;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .log .log-line { color: var(--muted); }
+  .log .log-line.done { color: var(--text); }
+  .log .log-line.active { color: var(--accent); }
+  .log .log-line .ts { color: var(--muted); margin-right: 8px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 12.5px;
+  }
+  .checkbox-row.selected {
+    border-color: var(--accent);
+    background: rgba(20, 184, 166, 0.05);
+  }
+  .checkbox-row input { margin-top: 2px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="accent">CNC AI</span> ТЕХНОЛОГ</div>
+  <div class="meta" id="topbar-meta">ПРОЄКТ #2026-04-24-001 · ОПЕРАТОР: ПОПОВИЧ Р.</div>
+</header>
+
+<div class="progress-bar">
+  <div class="progress-steps" id="progress-steps">
+    <div class="step-item active" data-step="1"><div class="step-num">1</div><div class="step-label">Верстат</div></div>
+    <div class="step-item" data-step="2"><div class="step-num">2</div><div class="step-label">Креслення</div></div>
+    <div class="step-item" data-step="3"><div class="step-num">3</div><div class="step-label">Задача</div></div>
+    <div class="step-item" data-step="4"><div class="step-num">4</div><div class="step-label">Уточнення</div></div>
+    <div class="step-item" data-step="5"><div class="step-num">5</div><div class="step-label">Розрахунок</div></div>
+    <div class="step-item" data-step="6"><div class="step-num">6</div><div class="step-label">Техкарта</div></div>
+    <div class="step-item" data-step="7"><div class="step-num">7</div><div class="step-label">Тест</div></div>
+    <div class="step-item" data-step="8"><div class="step-num">8</div><div class="step-label">База</div></div>
+  </div>
+</div>
+
+<main id="main">
+
+<!-- ============ STEP 1: MACHINE ============ -->
+<section class="step-screen active" id="step-1">
+  <div class="step-title">Верстат</div>
+  <div class="step-desc">Верстат вже введено в систему. Параметри взято з паспорту, перевірено технологом.</div>
+
+  <div class="alert ok">
+    <div class="alert-title">[OK] Дані введено та перевірено</div>
+    <div class="alert-body">Паспорт верстата завантажено 12.03.2026, верифіковано Поповичем Р. Жодних оновлень не потрібно.</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">Ідентифікація</div>
+      <div class="panel-row"><span class="label">Модель</span><span class="value">PINACHO STH 400-105×3000</span></div>
+      <div class="panel-row"><span class="label">Тип</span><span class="value">Токарний ЧПУ</span></div>
+      <div class="panel-row"><span class="label">Система ЧПУ</span><span class="value">Fanuc</span></div>
+      <div class="panel-row"><span class="label">Інв. №</span><span class="value">ZP-014</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Технічні параметри</div>
+      <div class="panel-row"><span class="label">Макс. оберти</span><span class="value">4000 об/хв</span></div>
+      <div class="panel-row"><span class="label">Потужність</span><span class="value">26 кВт</span></div>
+      <div class="panel-row"><span class="label">Макс. Ø обробки</span><span class="value">400 мм</span></div>
+      <div class="panel-row"><span class="label">РМЦ</span><span class="value">3000 мм</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Оснастка</div>
+      <div class="panel-row"><span class="label">Револьвер</span><span class="value">8 поз. (всі вільні)</span></div>
+      <div class="panel-row"><span class="label">Люнет</span><span class="value">є</span></div>
+      <div class="panel-row"><span class="label">Задній центр</span><span class="value">обертовий</span></div>
+      <div class="panel-row"><span class="label">ЗОР</span><span class="value">емульсія</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Стан і доступність</div>
+      <div class="panel-row"><span class="label">Останнє ТО</span><span class="value">14.02.2026</span></div>
+      <div class="panel-row"><span class="label">Завантаженість</span><span class="value">68%</span></div>
+      <div class="panel-row"><span class="label">Доступність</span><span class="value" style="color: var(--ok);">Вільний</span></div>
+      <div class="panel-row"><span class="label">Файл паспорту</span><span class="value">passport_pinacho.pdf</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STEP 2: DRAWING ============ -->
+<section class="step-screen" id="step-2">
+  <div class="step-title">Креслення деталі</div>
+  <div class="step-desc">Завантажте креслення. AI витягне розміри, допуски, матеріал. Технолог перевіряє кожне поле перед збереженням.</div>
+
+  <div id="drawing-upload" class="panel" style="text-align: center; padding: 36px 18px;">
+    <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Зона завантаження</div>
+    <div style="font-size: 14px; margin-bottom: 14px;">PDF, PNG, JPG · до 10 МБ</div>
+    <button class="btn primary" onclick="loadDrawing()">Завантажити: Шток.pdf</button>
+  </div>
+
+  <div id="drawing-loading" class="panel" style="display: none; text-align: center; padding: 36px 18px;">
+    <div class="spinner" style="margin-bottom: 12px;"></div>
+    <div style="font-size: 13px; margin-bottom: 12px;" id="drawing-stage">Зчитування PDF…</div>
+    <div class="log" id="drawing-log" style="text-align: left;"></div>
+  </div>
+
+  <div id="drawing-result" style="display: none;">
+    <div class="alert ok">
+      <div class="alert-title">[OK] Розпізнано · Claude Opus 4.7 · 3.2 сек</div>
+      <div class="alert-body">Перевірте поля нижче. Поля з позначкою <span class="badge warn"><span class="dot"></span>УВАГА</span> вимагають уваги.</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-title">Ідентифікація</div>
+        <div class="panel-row"><span class="label">Назва</span><span class="value">Шток</span></div>
+        <div class="panel-row"><span class="label">№ креслення</span><span class="value">4690-2.01.2024 B.01</span></div>
+        <div class="panel-row"><span class="label">Замовник</span><span class="value">ТОВ ТПК "НАК"</span></div>
+        <div class="panel-row"><span class="label">Розробив</span><span class="value">Попович Р.</span></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Матеріал та маса</div>
+        <div class="panel-row"><span class="label">Матеріал</span><span class="value">C45E (CK45) EN 10083-2</span></div>
+        <div class="panel-row"><span class="label">Твердість</span><span class="value" style="color: var(--warn);">не вказано · уточнити</span></div>
+        <div class="panel-row"><span class="label">Маса</span><span class="value">37.00 кг</span></div>
+        <div class="panel-row"><span class="label">Заготовка</span><span class="value" style="color: var(--warn);">«ø90 hardened» · уточнити</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Геометрія — ступені валу</div>
+      <table class="data-table">
+        <thead><tr><th>Ø, мм</th><th>Допуск</th><th>Шорсткість</th><th>Особливість</th></tr></thead>
+        <tbody>
+          <tr><td>90</td><td>* довідковий</td><td>Ra 6.3</td><td>гартована · база люнету</td></tr>
+          <tr><td>80</td><td>h9 (-0.07)</td><td>Ra 6.3</td><td>—</td></tr>
+          <tr><td>75</td><td>(-0.1)</td><td>Ra 6.3</td><td>—</td></tr>
+          <tr><td>70</td><td>f7 (-0.03/-0.06)</td><td>Ra 6.3</td><td>биття 0.06 (база E)</td></tr>
+          <tr><td>65</td><td>h9 (-0.07)</td><td>Ra 6.3</td><td>—</td></tr>
+          <tr><td>50</td><td>—</td><td>Ra 12.5</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-title">Різьби</div>
+        <div class="panel-row"><span class="label">M65×1.5</span><span class="value">L=62, ліва</span></div>
+        <div class="panel-row"><span class="label">M64×2</span><span class="value">L=25, права</span></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Канавки, конуси, фаски</div>
+        <div class="panel-row"><span class="label">Канавки</span><span class="value">Б, В, Г, Д (4 шт)</span></div>
+        <div class="panel-row"><span class="label">Конуси</span><span class="value">20° × 4</span></div>
+        <div class="panel-row"><span class="label">Фаски</span><span class="value">1×45°, 2×45°</span></div>
+      </div>
+    </div>
+
+    <div class="alert warn">
+      <div class="alert-title">[УВАГА] Неоднозначності в кресленні</div>
+      <div class="alert-body">
+        1. Позначка «ø90 hardened» — не вказано зону гартування і твердість. Уточнити в кроці 4.<br>
+        2. У перерізі A-A видно ø86 — можливо квадрат під ключ. Не виявлено в основних видах. Перевірити вручну.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STEP 3: TASK ============ -->
+<section class="step-screen" id="step-3">
+  <div class="step-title">Постановка задачі</div>
+  <div class="step-desc">Введіть параметри поточного процесу. AI проаналізує і запропонує оптимізацію.</div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">Назва і деталь</div>
+      <div class="form-row">
+        <label class="form-label">Назва проєкту</label>
+        <input class="form-input" value="Оптимізація штока ø90 — PINACHO STH 400">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Деталь</label>
+        <input class="form-input" value="Шток · 4690-2.01.2024 B.01" disabled>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Верстат</label>
+        <input class="form-input" value="PINACHO STH 400-105×3000" disabled>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Час і партія</div>
+      <div class="form-row">
+        <label class="form-label">Поточний час обробки, хв</label>
+        <input class="form-input mono" value="100">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Цільовий час, хв (опціонально)</label>
+        <input class="form-input mono" placeholder="оптимізувати максимально">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Розмір партії, шт</label>
+        <input class="form-input mono" value="50">
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Інструмент (з обігу)</div>
+    <table class="data-table">
+      <thead><tr><th>Тримач</th><th>Пластина</th><th>Виробник</th><th>Тип</th><th>На партію</th></tr></thead>
+      <tbody>
+        <tr><td>TCLNR 3232 P12</td><td>CNMG 120408 KCU10</td><td>KENNAMETAL</td><td>EXTERNAL</td><td>8</td></tr>
+        <tr><td>TOJNR 3232 P15</td><td>DNMG 150604 PC</td><td>TAEGUTEC</td><td>EXTERNAL</td><td>1</td></tr>
+        <tr><td>SVJCR 2525 M16</td><td>VCMN 150404 PC</td><td>TAEGUTEC</td><td>EXTERNAL</td><td>1</td></tr>
+        <tr><td>TTER 3232-4T25</td><td>TDXU 4E-04</td><td>TAEGUTEC</td><td>GROOVING</td><td>1</td></tr>
+        <tr><td>TTER 3232-3T20</td><td>TDT 3E-15-RU</td><td>TAEGUTEC</td><td>GROOVING</td><td>1</td></tr>
+        <tr><td>SER 3232 P16</td><td>16ER 1.5 ISO</td><td>TAEGUTEC</td><td>THREADING</td><td>1</td></tr>
+        <tr><td>SER 3232 P16</td><td>16ER 2.0 ISO</td><td>TAEGUTEC</td><td>THREADING</td><td>1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Примітки технолога</div>
+    <textarea class="form-textarea" rows="3">Заготовка — шток гартований ø90, довжина 883мм. Потрібно скоротити час зі 100 хв.</textarea>
+  </div>
+</section>
+
+<!-- ============ STEP 4: CLARIFY ============ -->
+<section class="step-screen" id="step-4">
+  <div class="step-title">Уточнюючі питання</div>
+  <div class="step-desc">AI задає ці питання ДО розрахунку. Без точних відповідей режими різання можуть бути небезпечними.</div>
+
+  <div class="alert warn">
+    <div class="alert-title">[ВАЖЛИВО] Чому ці питання обов'язкові</div>
+    <div class="alert-body">На кресленні «ø90 hardened» — інформація неповна. Якщо AI припустить, що гартована тільки зона ø90 — згенерує режими для сирого матеріалу. У реальності це може привести до поломки інструменту і браку деталі.</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">1. Заготовка та базування</div>
+
+    <div class="form-row">
+      <label class="form-label">Q1 — Заготовка вже гартована ø90f7. Чи точимо по ø90?</label>
+      <label class="checkbox-row selected">
+        <input type="radio" name="q1" checked> Зона ø90 залишається без обробки (точимо тільки менші діаметри)
+      </label>
+      <label class="checkbox-row">
+        <input type="radio" name="q1"> Гартований шар знімається по всій довжині
+      </label>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Q2 — Де розташована гартована зона ø90?</label>
+      <textarea class="form-textarea" rows="2">Гартована зона штоку розташована по всій довжині заготовки.</textarea>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Q3 — Твердість після гартування</label>
+      <input class="form-input mono" value="56-60 HRC">
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">2. Поточний процес обробки</div>
+
+    <div class="form-row">
+      <label class="form-label">Q4 — Кількість установів</label>
+      <label class="checkbox-row selected">
+        <input type="radio" name="q4" checked> 2 установи (переворот вручну)
+      </label>
+      <label class="checkbox-row"><input type="radio" name="q4"> 3 і більше установів</label>
+      <label class="checkbox-row"><input type="radio" name="q4"> 1 установ (без перевороту)</label>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Q5 — Люнет, на якому діаметрі?</label>
+      <input class="form-input mono" value="ø90">
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Q6 — Задній центр</label>
+      <label class="checkbox-row selected">
+        <input type="radio" name="q6" checked> Так, задній центр (обертовий)
+      </label>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Q7 — 100 хв — це який час?</label>
+      <label class="checkbox-row selected">
+        <input type="radio" name="q7" checked> Чистий машинний (шпиндельний) час
+      </label>
+      <label class="checkbox-row"><input type="radio" name="q7"> Повний штучний час</label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">3. Проблемні місця та якість</div>
+    <div class="form-row">
+      <label class="form-label">Q8 — Вібрації</label>
+      <input class="form-input" value="Вібрацій немає">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Q9 — Відхилення по точності/шорсткості</label>
+      <input class="form-input" value="Відхилень немає">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Q10 — Знос пластин</label>
+      <input class="form-input" value="Всі пластини зношуються однаково">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Q11 — Стружка</label>
+      <label class="checkbox-row selected"><input type="radio" name="q11" checked> Проблем немає</label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">4. Верстат та оснастка</div>
+    <div class="form-row">
+      <label class="form-label">Q12 — Система ЧПУ</label>
+      <input class="form-input" value="Fanuc">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Q13 — Револьвер: позицій / зайнято</label>
+      <input class="form-input mono" value="8 / 0 (всі вільні)">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Q14 — ЗОР</label>
+      <label class="checkbox-row selected"><input type="radio" name="q14" checked> Так, емульсія (водорозчинна)</label>
+    </div>
+  </div>
+
+  <div class="alert ok">
+    <div class="alert-title">[OK] 14 із 15 питань заповнено</div>
+    <div class="alert-body">Достатньо для запуску розрахунку. Q15 (додатково) пропущено — це не блокує.</div>
+  </div>
+</section>
+
+<!-- ============ STEP 5: CALCULATION ============ -->
+<section class="step-screen" id="step-5">
+  <div class="step-title">Розрахунок AI</div>
+  <div class="step-desc">Claude Opus 4.7 формує техкарту з урахуванням всіх відповідей. Показано хід розрахунку в реальному часі.</div>
+
+  <div id="calc-running" class="panel" style="text-align: center; padding: 30px 18px;">
+    <div class="spinner" style="margin-bottom: 14px;"></div>
+    <div style="font-size: 14px; margin-bottom: 4px;" id="calc-stage">Збір контексту…</div>
+    <div style="font-size: 11px; color: var(--muted);" id="calc-substage">завантаження паспорту верстата</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Журнал розрахунку</div>
+    <div class="log" id="calc-log"></div>
+  </div>
+
+  <div id="calc-done" style="display: none;">
+    <div class="alert ok">
+      <div class="alert-title">[OK] Розрахунок завершено</div>
+      <div class="alert-body">Час: <span class="mono">23.8 сек</span> · Токени: <span class="mono">12,840 in / 4,210 out</span> · Вартість виклику: <span class="mono">~$0.18</span></div>
+    </div>
+    <div class="alert warn">
+      <div class="alert-title">[ВАЖЛИВО] Зміна стратегії через відповіді технолога</div>
+      <div class="alert-body">
+        AI визначив: матеріал гартований 56-60 HRC по всій довжині. Звичайні пластини з обігу (KCU10, DNMG 150604 PC) <strong>НЕ застосовуються</strong> — вимагається CBN-інструмент. Це блокуючий фактор.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STEP 6: TECH CARD ============ -->
+<section class="step-screen" id="step-6">
+  <div class="step-title">Технологічна карта · v1</div>
+  <div class="step-desc">Згенеровано AI · Перевірте і відкоригуйте перед тестуванням. Жодна рекомендація не йде в роботу без затвердження технолога.</div>
+
+  <div class="grid-2" style="margin-bottom: 12px;">
+    <div class="panel" style="text-align: center;">
+      <div class="panel-title">Поточний час</div>
+      <div class="mono" style="font-size: 28px; font-weight: 600;">100 <span style="font-size: 13px; color: var(--muted); font-weight: 400;">хв</span></div>
+    </div>
+    <div class="panel" style="text-align: center; border-color: var(--accent);">
+      <div class="panel-title" style="color: var(--accent);">Розрахункова економія</div>
+      <div class="mono" style="font-size: 28px; font-weight: 600; color: var(--accent);">−13 <span style="font-size: 13px; color: var(--muted); font-weight: 400;">хв · 13%</span></div>
+    </div>
+  </div>
+
+  <div class="alert err">
+    <div class="alert-title">[БЛОКЕР] Інструмент потрібно замінити</div>
+    <div class="alert-body">
+      Поточні пластини (твердий сплав) непридатні для HRC 56-60. Перед тестуванням замовити CBN:
+      <ul style="margin: 6px 0 0 18px;">
+        <li>Sandvik CB7015 / CNGA 120408 — чорнова</li>
+        <li>Sandvik CB7115 / DNGA 150408 — чистова</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Схема базування</div>
+    <table class="data-table">
+      <thead><tr><th>Установ</th><th>Кріплення</th><th>Підтримка</th><th>База</th></tr></thead>
+      <tbody>
+        <tr><td>А (права)</td><td>Патрон 3-кул. за ø90, L=60</td><td>Задн. обертовий центр + люнет на ø90</td><td>Торець + ø90</td></tr>
+        <tr><td>Б (переворот)</td><td>Патрон за ø80 h9 (з прокладкою)</td><td>Задн. центр + люнет на ø90</td><td>Торець + ø80</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Маршрут і режими різання — Установ А</div>
+    <table class="data-table">
+      <thead><tr><th>№</th><th>Операція</th><th>Інструмент</th><th>D</th><th>n</th><th>S</th><th>V</th><th>t</th><th>To</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Підрізка торця</td><td>CBN CNGA 120408</td><td>80</td><td>480</td><td>0.08</td><td>120</td><td>0.2</td><td>0.8</td></tr>
+        <tr><td>2</td><td>Чорн. ø80→ø70</td><td>CBN CNGA 120408</td><td>78</td><td>450</td><td>0.12</td><td>110</td><td>0.30</td><td>15.2</td></tr>
+        <tr><td>3</td><td>Чист. ø70 f7</td><td>CBN DNGA 150408</td><td>70</td><td>820</td><td>0.08</td><td>180</td><td>0.12</td><td>3.6</td></tr>
+        <tr><td>4</td><td>Чист. ø65 h9</td><td>CBN DNGA 150408</td><td>65</td><td>830</td><td>0.08</td><td>170</td><td>0.10</td><td>4.2</td></tr>
+        <tr><td>5</td><td>Конус 20° (3 шт)</td><td>CBN VBMT 110304</td><td>—</td><td>900</td><td>0.07</td><td>165</td><td>0.10</td><td>3.4</td></tr>
+        <tr><td>6</td><td>Канавки Б, Г</td><td>CBN TDXU 4E-04</td><td>70</td><td>410</td><td>0.05</td><td>90</td><td>—</td><td>3.1</td></tr>
+        <tr><td>7</td><td>Різьба M64×2</td><td>CBN 16ER</td><td>64</td><td>400</td><td>2.0</td><td>80</td><td>—</td><td>2.4</td></tr>
+        <tr><td>8</td><td>Фаски + R</td><td>CBN VBMT 110304</td><td>—</td><td>900</td><td>0.07</td><td>165</td><td>—</td><td>0.6</td></tr>
+      </tbody>
+    </table>
+    <div style="font-size: 11px; color: var(--muted); margin-top: 8px;" class="mono">n=1000·V/(π·D) · To=L/(n·S) · Перевірка Ra=S²/(8·r)</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Маршрут і режими різання — Установ Б</div>
+    <table class="data-table">
+      <thead><tr><th>№</th><th>Операція</th><th>Інструмент</th><th>D</th><th>n</th><th>S</th><th>V</th><th>t</th><th>To</th></tr></thead>
+      <tbody>
+        <tr><td>9</td><td>Підрізка торця</td><td>CBN CNGA 120408</td><td>80</td><td>480</td><td>0.08</td><td>120</td><td>0.2</td><td>0.8</td></tr>
+        <tr><td>10</td><td>Чист. ø80 h9</td><td>CBN DNGA 150408</td><td>80</td><td>720</td><td>0.07</td><td>180</td><td>0.10</td><td>5.8</td></tr>
+        <tr><td>11</td><td>Чист. ø75</td><td>CBN DNGA 150408</td><td>75</td><td>765</td><td>0.08</td><td>180</td><td>0.10</td><td>0.8</td></tr>
+        <tr><td>12</td><td>Канавки В, Д</td><td>CBN TDT 3E-15</td><td>65</td><td>440</td><td>0.05</td><td>90</td><td>—</td><td>3.1</td></tr>
+        <tr><td>13</td><td>Різьба M65×1.5</td><td>CBN 16ER</td><td>65</td><td>390</td><td>1.5</td><td>80</td><td>—</td><td>2.1</td></tr>
+        <tr><td>14</td><td>Фінішні фаски</td><td>CBN VBMT 110304</td><td>—</td><td>900</td><td>0.07</td><td>165</td><td>—</td><td>0.5</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Нормування часу</div>
+    <table class="data-table">
+      <thead><tr><th>Складова</th><th>Позначка</th><th>хв</th><th>Коментар</th></tr></thead>
+      <tbody>
+        <tr><td>Основний (машинний)</td><td>To</td><td>46.4</td><td>Сума переходів обох установів</td></tr>
+        <tr><td>Допоміжний</td><td>Тд</td><td>22.0</td><td>Установка/зняття, переворот, вимірювання, заміна інструменту</td></tr>
+        <tr><td>Обслуговування</td><td>Тобс</td><td>4.6</td><td>10% від оперативного</td></tr>
+        <tr><td>Відпочинок</td><td>Твідп</td><td>4.6</td><td>10% від оперативного</td></tr>
+        <tr><td>Підготовчо-заключний</td><td>Тпз</td><td>9.0 / партія</td><td>Налаштування на партію</td></tr>
+        <tr style="background: var(--surface-2);"><td><strong>Штучний</strong></td><td><strong>Тшт</strong></td><td><strong>77.6</strong></td><td>To + Тд + Тобс + Твідп</td></tr>
+        <tr style="background: var(--surface-2);"><td><strong>Штучно-калькуляційний</strong></td><td><strong>Тшк</strong></td><td><strong>77.8</strong></td><td>Тшт + Тпз/n, n=50</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Валідатор безпеки</div>
+    <table class="data-table">
+      <thead><tr><th>Перевірка</th><th>Параметр</th><th>Межа</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr><td>Макс. оберти</td><td>n max = 900</td><td>4000</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>Потужність різання</td><td>P max ≈ 8.4 кВт</td><td>26 кВт</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>Сумісність матеріалу</td><td>HRC 56-60</td><td>CBN придатний</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>Глибина різання</td><td>t max = 0.30</td><td>≤ 0.4 (для CBN)</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>Подача чистова</td><td>S min = 0.07</td><td>Ra 6.3 досяжна</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>ЗОР</td><td>емульсія для CBN</td><td>заборонено</td><td><span class="badge warn"><span class="dot"></span>УВАГА</span></td></tr>
+      </tbody>
+    </table>
+    <div class="alert warn" style="margin-top: 10px; margin-bottom: 0;">
+      <div class="alert-title">[УВАГА] ЗОР</div>
+      <div class="alert-body">CBN-пластини потребують сухого різу або повітряного обдуву. Емульсія викликає термошок і скол пластин. Рекомендація: вимкнути подачу ЗОР, додати обдув повітрям.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STEP 7: TEST ============ -->
+<section class="step-screen" id="step-7">
+  <div class="step-title">Тестування на верстаті</div>
+  <div class="step-desc">Перша деталь обробляється за згенерованою картою. Технолог фіксує реальний час, проблеми, відхилення.</div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">Прогноз AI</div>
+      <div class="panel-row"><span class="label">Розрахунковий To</span><span class="value">46.4 хв</span></div>
+      <div class="panel-row"><span class="label">Розрахунковий Тшк</span><span class="value">77.8 хв</span></div>
+      <div class="panel-row"><span class="label">Економія від поточного</span><span class="value" style="color: var(--accent);">−13 хв (13%)</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Реальний результат тесту</div>
+      <div class="form-row">
+        <label class="form-label">Фактичний машинний час, хв</label>
+        <input class="form-input mono" value="48.2">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Фактичний штучний час, хв</label>
+        <input class="form-input mono" value="80.5">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Дата тесту</label>
+        <input class="form-input mono" value="24.04.2026 16:40">
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Контроль розмірів (вибірковий)</div>
+    <table class="data-table">
+      <thead><tr><th>Розмір</th><th>Допуск</th><th>Заміряно</th><th>Інструмент</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr><td>ø80</td><td>h9 (-0.07)</td><td>79.96</td><td>МК-100</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>ø75</td><td>(-0.1)</td><td>74.95</td><td>МК-100</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>ø70</td><td>f7 (-0.03/-0.06)</td><td>69.955</td><td>МК-100</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>ø65</td><td>h9 (-0.07)</td><td>64.97</td><td>МК-75</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>879</td><td>±0.3</td><td>879.1</td><td>Штангенциркуль</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>Биття ø70</td><td>0.06</td><td>0.04</td><td>Індикатор</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+        <tr><td>Ra ø70</td><td>6.3</td><td>5.8</td><td>Профілометр</td><td><span class="badge ok"><span class="dot"></span>OK</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Спостереження технолога</div>
+    <textarea class="form-textarea" rows="5">Інструмент CBN CB7015 поводиться добре, без вібрацій. На переході ø80→ø70 на 2-му проході почув нерівномірний звук — зменшив подачу з 0.12 до 0.10, далі стабільно. ЗОР вимкнули, додали обдув повітрям — стружка короткими сегментами, без намотування. Стійкість пластин: чорнова відпрацювала 1 деталь без помітного зносу. Реальний To 48.2 хв замість прогнозу 46.4 — на 2 хв більше через зменшену подачу на одному переході.</textarea>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Висновок з тесту</div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <label class="checkbox-row selected" style="flex: 1; min-width: 200px;">
+        <input type="radio" name="test-result" checked>
+        <div>
+          <strong>Тест успішний</strong><br>
+          <span style="color: var(--muted); font-size: 11px;">Розміри в допусках, без браку. Передати на затвердження.</span>
+        </div>
+      </label>
+      <label class="checkbox-row" style="flex: 1; min-width: 200px;">
+        <input type="radio" name="test-result">
+        <div>
+          <strong>Потрібне доопрацювання</strong><br>
+          <span style="color: var(--muted); font-size: 11px;">Дрібні корекції режимів, повторний AI-перерахунок.</span>
+        </div>
+      </label>
+      <label class="checkbox-row" style="flex: 1; min-width: 200px;">
+        <input type="radio" name="test-result">
+        <div>
+          <strong>Невдача</strong><br>
+          <span style="color: var(--muted); font-size: 11px;">Брак або поломка інструменту.</span>
+        </div>
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STEP 8: APPROVAL ============ -->
+<section class="step-screen" id="step-8">
+  <div class="step-title">Затвердження та збереження в базу знань</div>
+  <div class="step-desc">Останній крок. Після затвердження проєкт стане частиною контексту AI для всіх майбутніх задач.</div>
+
+  <div class="alert ok">
+    <div class="alert-title">[OK] Тест успішний — готово до затвердження</div>
+    <div class="alert-body">Прогноз AI 46.4 хв · Реально 48.2 хв · Похибка +3.9%. Розміри в допусках, поломок немає. Технолог приймає результат.</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Підсумкова картка проєкту</div>
+    <div class="grid-2">
+      <div>
+        <div class="panel-row"><span class="label">Назва</span><span class="value">Шток ø90 PINACHO STH 400</span></div>
+        <div class="panel-row"><span class="label">Деталь</span><span class="value">Шток · 4690-2.01.2024 B.01</span></div>
+        <div class="panel-row"><span class="label">Матеріал</span><span class="value">C45E, 56-60 HRC</span></div>
+        <div class="panel-row"><span class="label">Верстат</span><span class="value">PINACHO STH 400 · Fanuc</span></div>
+      </div>
+      <div>
+        <div class="panel-row"><span class="label">Поточний To</span><span class="value">100 хв</span></div>
+        <div class="panel-row"><span class="label">AI-прогноз</span><span class="value">46.4 хв</span></div>
+        <div class="panel-row"><span class="label">Реально</span><span class="value">48.2 хв</span></div>
+        <div class="panel-row"><span class="label">Економія</span><span class="value" style="color: var(--ok);">−51.8 хв (51.8%)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Що піде в базу знань</div>
+    <table class="data-table">
+      <thead><tr><th>Поле</th><th>Значення</th><th>Як це використовується далі</th></tr></thead>
+      <tbody>
+        <tr><td>aiOptTime</td><td>46.4 хв</td><td>Точність AI-прогнозу для цього типу матеріалу</td></tr>
+        <tr><td>realTime</td><td>48.2 хв</td><td>Калібрування поправочного коефіцієнта</td></tr>
+        <tr><td>materialContext</td><td>C45E HRC 56-60</td><td>Бібліотека режимів для гартованих сталей</td></tr>
+        <tr><td>toolContext</td><td>CBN CB7015 / CB7115</td><td>Підтверджена сумісність інструменту і матеріалу</td></tr>
+        <tr><td>technologistNotes</td><td>«ЗОР вимкнули, обдув»</td><td>Вирішення для всіх hard turning проєктів</td></tr>
+        <tr><td>machineContext</td><td>PINACHO STH 400</td><td>Реальна продуктивність на цьому верстаті</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Підпис</div>
+    <div class="grid-2">
+      <div class="form-row">
+        <label class="form-label">Розробив</label>
+        <input class="form-input" value="AI + Попович Р.">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Затвердив</label>
+        <input class="form-input" value="Герус Д. (нач. ВТВ)">
+      </div>
+    </div>
+  </div>
+
+  <div class="alert ok" id="approve-result" style="display: none;">
+    <div class="alert-title">[ЗАТВЕРДЖЕНО] Проєкт додано в базу знань</div>
+    <div class="alert-body">
+      ID: <span class="mono">PRJ-2026-04-24-001</span> · Статус: <span class="mono">APPROVED</span><br>
+      Дані доступні для контексту AI у всіх майбутніх проєктах на цьому верстаті та з цим матеріалом.
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 10px; margin-top: 16px;">
+    <button class="btn primary" onclick="approveProject()" style="flex: 1;">Затвердити та зберегти в базу</button>
+    <button class="btn">Експорт PDF</button>
+    <button class="btn">Завантажити G-код</button>
+  </div>
+</section>
+
+</main>
+
+<div class="footer-nav">
+  <div class="footer-nav-inner">
+    <button class="btn" id="btn-back">← Назад</button>
+    <div class="footer-status" id="footer-status">КРОК 1 / 8</div>
+    <button class="btn primary" id="btn-next">Далі →</button>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+const TOTAL_STEPS = 8;
+
+function renderStep() {
+  document.querySelectorAll('.step-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + currentStep).classList.add('active');
+  document.querySelectorAll('.step-item').forEach(item => {
+    const n = parseInt(item.dataset.step);
+    item.classList.remove('active', 'done');
+    if (n === currentStep) item.classList.add('active');
+    else if (n < currentStep) item.classList.add('done');
+  });
+  document.getElementById('btn-back').disabled = currentStep === 1;
+  document.getElementById('btn-next').disabled = currentStep === TOTAL_STEPS;
+  document.getElementById('footer-status').textContent = 'КРОК ' + currentStep + ' / ' + TOTAL_STEPS;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (currentStep === 5) startCalculation();
+}
+
+document.getElementById('btn-next').addEventListener('click', () => {
+  if (currentStep < TOTAL_STEPS) { currentStep++; renderStep(); }
+});
+document.getElementById('btn-back').addEventListener('click', () => {
+  if (currentStep > 1) { currentStep--; renderStep(); }
+});
+
+function ts() {
+  const d = new Date();
+  return d.toTimeString().slice(0, 8);
+}
+
+function loadDrawing() {
+  document.getElementById('drawing-upload').style.display = 'none';
+  document.getElementById('drawing-loading').style.display = 'block';
+  const log = document.getElementById('drawing-log');
+  const stage = document.getElementById('drawing-stage');
+  const stages = [
+    { t: 'Завантаження файлу Шток.pdf (76 КБ)', s: 'Зчитування PDF…' },
+    { t: 'Растеризація сторінок · 1 сторінка', s: 'Підготовка зображення…' },
+    { t: 'Виклик Claude Opus 4.7 (vision)', s: 'AI аналізує креслення…' },
+    { t: 'Витягнуто: name, drawingNo, material, weight', s: 'Витягування основних даних…' },
+    { t: 'Витягнуто: 6 ступенів валу + допуски', s: 'Розпізнавання геометрії…' },
+    { t: 'Витягнуто: 2 різьби, 4 канавки, 4 конуси', s: 'Деталі форми…' },
+    { t: 'Перевірка JSON-схеми · валідація допусків', s: 'Валідація…' },
+    { t: 'Виявлено 2 неоднозначності', s: 'Підготовка форми перевірки…' },
+  ];
+  log.innerHTML = '';
+  let i = 0;
+  const iv = setInterval(() => {
+    if (i < stages.length) {
+      const line = document.createElement('div');
+      line.className = 'log-line active';
+      line.innerHTML = '<span class="ts">[' + ts() + ']</span>' + stages[i].t;
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+      stage.textContent = stages[i].s;
+      if (i > 0) log.children[i - 1].className = 'log-line done';
+      i++;
+    } else {
+      clearInterval(iv);
+      log.children[log.children.length - 1].className = 'log-line done';
+      setTimeout(() => {
+        document.getElementById('drawing-loading').style.display = 'none';
+        document.getElementById('drawing-result').style.display = 'block';
+      }, 400);
+    }
+  }, 380);
+}
+
+let calcStarted = false;
+function startCalculation() {
+  if (calcStarted) return;
+  calcStarted = true;
+  const log = document.getElementById('calc-log');
+  const stage = document.getElementById('calc-stage');
+  const sub = document.getElementById('calc-substage');
+  const stages = [
+    { stage: 'Збір контексту', sub: 'паспорт верстата (PINACHO STH 400)', log: 'Завантажено паспорт верстата · 1.2 КБ' },
+    { stage: 'Збір контексту', sub: 'розпізнані дані деталі (Шток)', log: 'Завантажено креслення-JSON · 4.8 КБ' },
+    { stage: 'Збір контексту', sub: 'відповіді опитувальника (14 питань)', log: 'Завантажено уточнення · 0.9 КБ' },
+    { stage: 'Збір контексту', sub: 'база знань · 8 проєктів на PINACHO', log: 'Контекст бази знань · 12.4 КБ' },
+    { stage: 'Виклик AI', sub: 'Claude Opus 4.7 · prompt caching ON', log: 'Запит відправлено · 12,840 in токенів' },
+    { stage: 'Аналіз AI', sub: 'визначення стратегії обробки', log: 'AI: матеріал 56-60 HRC по всій довжині — hard turning' },
+    { stage: 'Аналіз AI', sub: 'підбір інструменту', log: 'AI: твердосплав непридатний · вимагається CBN' },
+    { stage: 'Аналіз AI', sub: 'розрахунок схеми базування', log: 'AI: 2 установи, люнет на ø90, задн. центр' },
+    { stage: 'Аналіз AI', sub: 'формування маршруту обробки', log: 'AI: 14 переходів (8+6) для двох установів' },
+    { stage: 'Аналіз AI', sub: 'розрахунок режимів різання', log: 'AI: V=80-180 м/хв · S=0.05-0.12 · t=0.10-0.30' },
+    { stage: 'Аналіз AI', sub: 'нормування часу', log: 'AI: To=46.4 · Тшт=77.6 · Тшк=77.8' },
+    { stage: 'Валідація', sub: 'перевірка n ≤ maxRpm', log: 'OK · 900 ≤ 4000' },
+    { stage: 'Валідація', sub: 'перевірка потужності різання', log: 'OK · 8.4 кВт ≤ 26 кВт' },
+    { stage: 'Валідація', sub: 'сумісність інструменту з HRC', log: 'OK · CBN придатний для HRC 56-60' },
+    { stage: 'Валідація', sub: 'перевірка ЗОР', log: 'УВАГА · емульсія несумісна з CBN' },
+    { stage: 'Готово', sub: 'формування звіту', log: 'Техкарту згенеровано · 4,210 out токенів' },
+  ];
+  log.innerHTML = '';
+  let i = 0;
+  const iv = setInterval(() => {
+    if (i < stages.length) {
+      stage.textContent = stages[i].stage;
+      sub.textContent = stages[i].sub;
+      const line = document.createElement('div');
+      line.className = 'log-line active';
+      line.innerHTML = '<span class="ts">[' + ts() + ']</span>' + stages[i].log;
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+      if (i > 0) log.children[i - 1].className = 'log-line done';
+      i++;
+    } else {
+      clearInterval(iv);
+      log.children[log.children.length - 1].className = 'log-line done';
+      setTimeout(() => {
+        document.getElementById('calc-running').style.display = 'none';
+        document.getElementById('calc-done').style.display = 'block';
+      }, 500);
+    }
+  }, 320);
+}
+
+function approveProject() {
+  document.getElementById('approve-result').style.display = 'block';
+  document.getElementById('topbar-meta').textContent = 'ПРОЄКТ #2026-04-24-001 · СТАТУС: APPROVED';
+}
+</script>
+
+</body>
+</html>
