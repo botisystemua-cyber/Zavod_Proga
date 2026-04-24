@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNC AI Технолог — Демо</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:#0b1220; color:#e2e8f0; }
+  .glow { box-shadow: 0 0 0 1px rgba(45,212,191,.15), 0 8px 24px rgba(0,0,0,.35); }
+  .accent { color:#2dd4bf; }
+  .accent-bg { background:#0d9488; }
+  .chip { display:inline-flex; align-items:center; gap:.35rem; padding:.2rem .6rem; border-radius:9999px; font-size:.75rem; }
+  .tab-btn.active { color:#2dd4bf; border-color:#2dd4bf; }
+  .markdown h2 { font-size:1.1rem; font-weight:600; color:#2dd4bf; margin-top:1rem; margin-bottom:.5rem; }
+  .markdown table { width:100%; border-collapse:collapse; margin:.5rem 0; font-size:.82rem; }
+  .markdown th, .markdown td { border:1px solid #1e293b; padding:.35rem .5rem; text-align:left; }
+  .markdown th { background:#0f172a; color:#94a3b8; font-weight:500; }
+  .btn-primary { background:#0d9488; color:#fff; font-weight:600; padding:.6rem 1rem; border-radius:.5rem; transition:all .2s; }
+  .btn-primary:hover { background:#0f766e; }
+  .btn-secondary { background:#1e293b; color:#e2e8f0; padding:.5rem .9rem; border-radius:.5rem; border:1px solid #334155; }
+  .status-dot { width:.5rem; height:.5rem; border-radius:9999px; display:inline-block; }
+  .pulse::before { content:''; position:absolute; inset:0; border-radius:inherit; background:inherit; animation:pulse 2s infinite; opacity:.6; }
+  @keyframes pulse { 0%,100% { transform:scale(1); opacity:.6; } 50% { transform:scale(1.15); opacity:0; } }
+  .screen { display:none; }
+  .screen.active { display:block; }
+  details > summary { cursor:pointer; list-style:none; }
+  details > summary::-webkit-details-marker { display:none; }
+  .spinner { border:3px solid #1e293b; border-top-color:#2dd4bf; border-radius:50%; width:32px; height:32px; animation:spin 1s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- HEADER -->
+<header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-20">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg accent-bg flex items-center justify-center font-bold text-white">AI</div>
+      <div>
+        <div class="font-semibold text-sm">CNC AI Технолог</div>
+        <div class="text-xs text-slate-400">Оптимізація токарної обробки</div>
+      </div>
+    </div>
+    <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400">
+      <span class="status-dot bg-emerald-400"></span> Claude Opus 4.7 підключено
+    </div>
+  </div>
+  <nav class="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto text-sm">
+    <button onclick="showScreen('dashboard')" data-tab="dashboard" class="tab-btn active px-3 py-2 border-b-2 border-transparent whitespace-nowrap">Панель</button>
+    <button onclick="showScreen('recognize')" data-tab="recognize" class="tab-btn px-3 py-2 border-b-2 border-transparent whitespace-nowrap">Розпізнавання</button>
+    <button onclick="showScreen('project')" data-tab="project" class="tab-btn px-3 py-2 border-b-2 border-transparent whitespace-nowrap">Проєкт: Шток</button>
+    <button onclick="showScreen('clarify')" data-tab="clarify" class="tab-btn px-3 py-2 border-b-2 border-transparent whitespace-nowrap">Уточнення</button>
+    <button onclick="showScreen('analysis')" data-tab="analysis" class="tab-btn px-3 py-2 border-b-2 border-transparent whitespace-nowrap">AI-техкарта</button>
+    <button onclick="showScreen('knowledge')" data-tab="knowledge" class="tab-btn px-3 py-2 border-b-2 border-transparent whitespace-nowrap">База знань</button>
+  </nav>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+<!-- =============== DASHBOARD =============== -->
+<section id="dashboard" class="screen active">
+  <h1 class="text-2xl font-bold mb-1">Панель</h1>
+  <p class="text-slate-400 text-sm mb-6">AI пропонує — технолог вирішує. Кожен результат проходить перевірку і тестування.</p>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-3xl font-bold accent">3</div>
+      <div class="text-xs text-slate-400 mt-1">Верстати</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-3xl font-bold accent">12</div>
+      <div class="text-xs text-slate-400 mt-1">Деталі</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-3xl font-bold accent">8</div>
+      <div class="text-xs text-slate-400 mt-1">Проєкти</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-3xl font-bold accent">147</div>
+      <div class="text-xs text-slate-400 mt-1">Зекономлено хв</div>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-3 mb-6">
+    <button onclick="showScreen('recognize')" class="bg-slate-800/60 hover:bg-slate-800 glow rounded-xl p-4 text-left transition">
+      <div class="accent font-semibold mb-1">+ Додати креслення</div>
+      <div class="text-xs text-slate-400">AI розпізнає розміри, допуски, матеріал</div>
+    </button>
+    <button onclick="showScreen('project')" class="bg-slate-800/60 hover:bg-slate-800 glow rounded-xl p-4 text-left transition">
+      <div class="accent font-semibold mb-1">+ Новий проєкт</div>
+      <div class="text-xs text-slate-400">Деталь + верстат + поточний час</div>
+    </button>
+    <button onclick="showScreen('knowledge')" class="bg-slate-800/60 hover:bg-slate-800 glow rounded-xl p-4 text-left transition">
+      <div class="accent font-semibold mb-1">База знань</div>
+      <div class="text-xs text-slate-400">8 затверджених проєктів</div>
+    </button>
+  </div>
+
+  <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Останні проєкти</h2>
+  <div class="space-y-2">
+    <div onclick="showScreen('project')" class="bg-slate-800/60 glow rounded-xl p-4 hover:bg-slate-800 cursor-pointer flex items-center justify-between">
+      <div>
+        <div class="font-semibold">Оптимізація штока ø90 — PINACHO STH 400</div>
+        <div class="text-xs text-slate-400 mt-1">Шток · 4690-2.01.2024 B.01 · C45E 56-60 HRC · 100 хв</div>
+      </div>
+      <span class="chip bg-amber-500/10 text-amber-400">AI_REVIEW</span>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4 flex items-center justify-between">
+      <div>
+        <div class="font-semibold">Вал проміжний — HAAS ST-20</div>
+        <div class="text-xs text-slate-400 mt-1">40Х · 45 хв → 34 хв (-24%)</div>
+      </div>
+      <span class="chip bg-emerald-500/10 text-emerald-400">APPROVED</span>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4 flex items-center justify-between">
+      <div>
+        <div class="font-semibold">Фланець ø220 — DMG CTX 310</div>
+        <div class="text-xs text-slate-400 mt-1">AISI 304 · 28 хв → 21 хв (-25%)</div>
+      </div>
+      <span class="chip bg-emerald-500/10 text-emerald-400">APPROVED</span>
+    </div>
+  </div>
+</section>
+
+<!-- =============== RECOGNIZE =============== -->
+<section id="recognize" class="screen">
+  <h1 class="text-2xl font-bold mb-1">Розпізнавання креслення</h1>
+  <p class="text-slate-400 text-sm mb-6">Завантажте PDF або фото — AI витягне розміри, допуски, матеріал. Технолог перевіряє кожне поле перед збереженням.</p>
+
+  <div id="rec-upload" class="bg-slate-800/60 glow rounded-xl p-8 border-2 border-dashed border-slate-700 text-center">
+    <div class="text-5xl mb-3">📐</div>
+    <div class="font-semibold mb-1">Перетягніть креслення сюди</div>
+    <div class="text-xs text-slate-400 mb-4">PDF, PNG, JPG · до 10 МБ</div>
+    <button onclick="startRecognize()" class="btn-primary">Приклад: Шток.pdf</button>
+  </div>
+
+  <div id="rec-loading" class="hidden bg-slate-800/60 glow rounded-xl p-8 text-center">
+    <div class="spinner mx-auto mb-4"></div>
+    <div class="font-semibold mb-1">Claude Opus 4.7 аналізує креслення…</div>
+    <div class="text-xs text-slate-400" id="rec-stage">Зчитування PDF</div>
+  </div>
+
+  <div id="rec-result" class="hidden space-y-4">
+    <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-start gap-3">
+      <div class="text-emerald-400 text-xl">✓</div>
+      <div>
+        <div class="font-semibold text-emerald-400">Розпізнано за 3.2 сек</div>
+        <div class="text-xs text-slate-300 mt-1">Перевірте поля нижче. Якщо все правильно — натисніть «Зберегти в базу».</div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-slate-800/60 glow rounded-xl p-4">
+        <div class="text-xs text-slate-400 uppercase tracking-wider mb-3">Основні дані</div>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-slate-400">Назва</span><span class="font-mono">Шток</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Креслення</span><span class="font-mono">4690-2.01.2024 B.01</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Матеріал</span><span class="font-mono">C45E (CK45) EN 10083-2</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Маса</span><span class="font-mono">37.00 кг</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Довжина</span><span class="font-mono">879 ±0.3 мм</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Шорсткість</span><span class="font-mono">Ra 6.3 / Ra 12.5</span></div>
+        </div>
+      </div>
+      <div class="bg-slate-800/60 glow rounded-xl p-4">
+        <div class="text-xs text-slate-400 uppercase tracking-wider mb-3">Ступені валу</div>
+        <div class="space-y-1.5 text-sm font-mono">
+          <div>ø90 * hardened <span class="text-slate-500 text-xs">(довідковий)</span></div>
+          <div>ø80 h9 (-0.07)</div>
+          <div>ø75 (-0.1)</div>
+          <div>ø70 f7 (-0.03/-0.06)</div>
+          <div>ø65 h9 (-0.07)</div>
+          <div>ø50</div>
+        </div>
+      </div>
+      <div class="bg-slate-800/60 glow rounded-xl p-4">
+        <div class="text-xs text-slate-400 uppercase tracking-wider mb-3">Різьби та канавки</div>
+        <div class="space-y-1.5 text-sm">
+          <div class="font-mono">M65x1.5 · ліва, L=62</div>
+          <div class="font-mono">M64x2 · права, L=25</div>
+          <div class="text-slate-400 text-xs mt-2">Канавки: Б (4 мм), В (3 мм), Г (R1.8), Д (5+0.2)</div>
+        </div>
+      </div>
+      <div class="bg-slate-800/60 glow rounded-xl p-4">
+        <div class="text-xs text-slate-400 uppercase tracking-wider mb-3">Геометрія</div>
+        <div class="space-y-1.5 text-sm">
+          <div>4 конуси 20°</div>
+          <div>Фаски: 1x45°, 2x45°</div>
+          <div>Биття 0.06 мм (ø70 f7, база E)</div>
+          <div class="text-amber-400 text-xs mt-2">⚠ Можливий квадрат під ключ (A-A: ø86). Перевірте вручну.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <button class="btn-primary flex-1">Зберегти в базу</button>
+      <button onclick="resetRecognize()" class="btn-secondary">Скасувати</button>
+    </div>
+  </div>
+</section>
+
+<!-- =============== PROJECT DETAIL =============== -->
+<section id="project" class="screen">
+  <div class="flex items-start justify-between mb-4 flex-wrap gap-2">
+    <div>
+      <h1 class="text-2xl font-bold">Оптимізація штока ø90</h1>
+      <div class="text-sm text-slate-400">Створено 24.04.2026 · PINACHO STH 400-105x3000</div>
+    </div>
+    <span class="chip bg-amber-500/10 text-amber-400">
+      <span class="relative status-dot bg-amber-400 pulse"></span> AI_REVIEW
+    </span>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-3 mb-6">
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-xs text-slate-400 uppercase tracking-wider mb-2">Деталь</div>
+      <div class="font-semibold text-sm">Шток</div>
+      <div class="text-xs text-slate-400 mt-1">4690-2.01.2024 B.01</div>
+      <div class="text-xs text-slate-400">C45E, 37 кг, L=879</div>
+      <div class="chip bg-red-500/10 text-red-400 mt-2">⚠ Гартована 56-60 HRC</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-xs text-slate-400 uppercase tracking-wider mb-2">Верстат</div>
+      <div class="font-semibold text-sm">PINACHO STH 400</div>
+      <div class="text-xs text-slate-400 mt-1">Fanuc · 4000 об/хв · 26 кВт</div>
+      <div class="text-xs text-slate-400">Револьвер: 8 поз. (всі вільні)</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-xs text-slate-400 uppercase tracking-wider mb-2">Час і партія</div>
+      <div class="font-semibold text-sm">100 хв <span class="text-slate-400 font-normal text-xs">(машинний)</span></div>
+      <div class="text-xs text-slate-400 mt-1">Партія: 50 шт</div>
+      <div class="text-xs text-slate-400">Установи: 2 (переворот вручну)</div>
+    </div>
+  </div>
+
+  <div class="bg-slate-800/60 glow rounded-xl p-5 mb-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold">AI-аналіз</h2>
+      <button onclick="showScreen('analysis')" class="btn-primary text-sm">Відкрити техкарту →</button>
+    </div>
+    <div class="bg-slate-900/60 rounded-lg p-4 text-sm">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="status-dot bg-emerald-400"></span>
+        <span class="font-semibold accent">Аналіз завершено (v2)</span>
+        <span class="text-xs text-slate-500 ml-auto">3 хв тому</span>
+      </div>
+      <div class="grid grid-cols-3 gap-3 my-3">
+        <div class="text-center">
+          <div class="text-xs text-slate-400">Поточний</div>
+          <div class="text-xl font-bold">100 <span class="text-xs font-normal">хв</span></div>
+        </div>
+        <div class="text-center">
+          <div class="text-xs text-slate-400">Оптимум</div>
+          <div class="text-xl font-bold accent">87 <span class="text-xs font-normal">хв</span></div>
+        </div>
+        <div class="text-center">
+          <div class="text-xs text-slate-400">Економія</div>
+          <div class="text-xl font-bold text-emerald-400">-13 <span class="text-xs font-normal">(13%)</span></div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400">CBN-інструмент, hard turning 56-60 HRC. Натисніть «Відкрити техкарту» щоб побачити маршрут, режими і обґрунтування.</div>
+    </div>
+  </div>
+
+  <div class="bg-slate-800/60 glow rounded-xl p-5 mb-4">
+    <h2 class="font-semibold mb-3">Коментарі технолога <span class="text-xs text-slate-400 font-normal">(AI врахує при наступному аналізі)</span></h2>
+    <div class="space-y-2 mb-3">
+      <div class="bg-slate-900/60 rounded-lg p-3 text-sm">
+        <div class="flex justify-between text-xs text-slate-400 mb-1"><span>Попович Р.</span><span>10 хв тому</span></div>
+        <div>Вся заготовка гартована 56-60 HRC, не тільки ø90. Перерахуй з CBN-пластинами, не твердим сплавом.</div>
+      </div>
+      <div class="bg-slate-900/60 rounded-lg p-3 text-sm">
+        <div class="flex justify-between text-xs text-slate-400 mb-1"><span>Попович Р.</span><span>5 хв тому</span></div>
+        <div>ЗОР на CBN не застосовуємо — ризик термошоку. Додай повітряний обдув.</div>
+      </div>
+    </div>
+    <textarea rows="2" placeholder="Новий коментар…" class="w-full bg-slate-900/60 border border-slate-700 rounded-lg p-2 text-sm"></textarea>
+    <div class="flex justify-end mt-2">
+      <button class="btn-primary text-sm">Надіслати та перерахувати</button>
+    </div>
+  </div>
+
+  <div class="bg-slate-800/60 glow rounded-xl p-5">
+    <h2 class="font-semibold mb-3">Журнал дій</h2>
+    <div class="space-y-1.5 text-xs text-slate-400 font-mono">
+      <div>24.04.2026 14:02 — Проєкт створено</div>
+      <div>24.04.2026 14:03 — Креслення розпізнано (Claude Opus 4.7)</div>
+      <div>24.04.2026 14:05 — Заповнено опитувальник (14/15)</div>
+      <div>24.04.2026 14:06 — AI-аналіз v1 згенеровано</div>
+      <div>24.04.2026 14:12 — Коментар: «вся заготовка гартована»</div>
+      <div>24.04.2026 14:13 — AI-аналіз v2 згенеровано (з CBN)</div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== CLARIFY =============== -->
+<section id="clarify" class="screen">
+  <h1 class="text-2xl font-bold mb-1">Уточнюючі питання</h1>
+  <p class="text-slate-400 text-sm mb-6">AI задає питання ДО генерації техкарти. Без цього кроку модель домислить критичні параметри — це може призвести до помилкових режимів.</p>
+
+  <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-4 flex items-start gap-3">
+    <div class="text-amber-400 text-xl">⚠</div>
+    <div class="text-sm">
+      <div class="font-semibold text-amber-400 mb-1">Чому це критично</div>
+      <div class="text-slate-300">На цьому кресленні позначено лише «ø90 hardened». AI міг би припустити, що гартована тільки ця зона і зняти гартований шар. Реально — вся деталь гартована на 56-60 HRC, і звичайні пластини ламаються за перший прохід.</div>
+    </div>
+  </div>
+
+  <div class="space-y-3">
+    <details open class="bg-slate-800/60 glow rounded-xl p-4">
+      <summary class="flex items-center justify-between">
+        <div>
+          <span class="chip bg-teal-500/20 text-teal-300 mr-2">Q1</span>
+          <span class="font-semibold text-sm">Заготовка гартована ø90f7 — точити по ø90 чи лише менші діаметри?</span>
+        </div>
+        <span class="text-emerald-400">✓</span>
+      </summary>
+      <div class="mt-3 text-sm">
+        <label class="flex items-center gap-2 p-2 rounded bg-emerald-500/10 border border-emerald-500/30">
+          <input type="radio" checked> Зона ø90 залишається без обробки
+        </label>
+      </div>
+    </details>
+
+    <details class="bg-slate-800/60 glow rounded-xl p-4">
+      <summary class="flex items-center justify-between">
+        <div>
+          <span class="chip bg-teal-500/20 text-teal-300 mr-2">Q2</span>
+          <span class="font-semibold text-sm">Де розташована гартована зона?</span>
+        </div>
+        <span class="text-emerald-400">✓</span>
+      </summary>
+      <div class="mt-3 text-sm text-slate-300">По всій довжині заготовки 879 мм.</div>
+    </details>
+
+    <details class="bg-slate-800/60 glow rounded-xl p-4">
+      <summary class="flex items-center justify-between">
+        <div>
+          <span class="chip bg-teal-500/20 text-teal-300 mr-2">Q3</span>
+          <span class="font-semibold text-sm">Яка твердість після гартування?</span>
+        </div>
+        <span class="text-emerald-400">✓</span>
+      </summary>
+      <div class="mt-3 text-sm text-slate-300 font-mono">56-60 HRC</div>
+    </details>
+
+    <details class="bg-slate-800/60 glow rounded-xl p-4">
+      <summary class="flex items-center justify-between">
+        <div>
+          <span class="chip bg-teal-500/20 text-teal-300 mr-2">Q4-Q7</span>
+          <span class="font-semibold text-sm">Процес обробки</span>
+        </div>
+        <span class="text-emerald-400">✓</span>
+      </summary>
+      <div class="mt-3 text-sm text-slate-300 space-y-1">
+        <div>Q4: 2 установи, переворот вручну</div>
+        <div>Q5: Люнет на ø90</div>
+        <div>Q6: Задній центр</div>
+        <div>Q7: 100 хв — чистий машинний час</div>
+      </div>
+    </details>
+
+    <details class="bg-slate-800/60 glow rounded-xl p-4">
+      <summary class="flex items-center justify-between">
+        <div>
+          <span class="chip bg-teal-500/20 text-teal-300 mr-2">Q8-Q11</span>
+          <span class="font-semibold text-sm">Проблеми та якість</span>
+        </div>
+        <span class="text-emerald-400">✓</span>
+      </summary>
+      <div class="mt-3 text-sm text-slate-300 space-y-1">
+        <div>Q8: Вібрацій немає</div>
+        <div>Q9: Відхилень немає</div>
+        <div>Q10: Пластини зношуються рівномірно</div>
+        <div>Q11: Проблем зі стружкою немає</div>
+      </div>
+    </details>
+
+    <details class="bg-slate-800/60 glow rounded-xl p-4">
+      <summary class="flex items-center justify-between">
+        <div>
+          <span class="chip bg-teal-500/20 text-teal-300 mr-2">Q12-Q14</span>
+          <span class="font-semibold text-sm">Верстат та оснастка</span>
+        </div>
+        <span class="text-emerald-400">✓</span>
+      </summary>
+      <div class="mt-3 text-sm text-slate-300 space-y-1">
+        <div>Q12: Fanuc <span class="text-amber-400 text-xs">(не Fagor як було в паспорті)</span></div>
+        <div>Q13: 8 позицій, всі вільні</div>
+        <div>Q14: ЗОР — емульсія (але для CBN не застосовуватимемо)</div>
+      </div>
+    </details>
+
+    <details class="bg-slate-800/60 glow rounded-xl p-4 opacity-60">
+      <summary class="flex items-center justify-between">
+        <div>
+          <span class="chip bg-slate-600/30 text-slate-400 mr-2">Q15</span>
+          <span class="font-semibold text-sm">Додаткова інформація</span>
+        </div>
+        <span class="text-slate-500">пропущено</span>
+      </summary>
+    </details>
+  </div>
+
+  <div class="mt-6 flex gap-2">
+    <button onclick="showScreen('analysis')" class="btn-primary flex-1">Відповіді збережено → Запустити AI-аналіз</button>
+  </div>
+</section>
+
+<!-- =============== AI ANALYSIS =============== -->
+<section id="analysis" class="screen">
+  <div class="flex items-start justify-between mb-4 flex-wrap gap-2">
+    <div>
+      <h1 class="text-2xl font-bold">AI-техкарта · Шток</h1>
+      <div class="text-sm text-slate-400">Claude Opus 4.7 · v2 з урахуванням коментарів · 23.8 сек</div>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn-secondary text-sm">Експорт PDF</button>
+      <button class="btn-primary text-sm">Перерахувати</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-3 mb-6">
+    <div class="bg-slate-800/60 glow rounded-xl p-4 text-center">
+      <div class="text-xs text-slate-400">Поточний час</div>
+      <div class="text-3xl font-bold mt-1">100</div>
+      <div class="text-xs text-slate-400">хв</div>
+    </div>
+    <div class="bg-teal-500/10 border border-teal-500/30 rounded-xl p-4 text-center">
+      <div class="text-xs text-slate-400">Оптимум</div>
+      <div class="text-3xl font-bold accent mt-1">87</div>
+      <div class="text-xs text-slate-400">хв</div>
+    </div>
+    <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 text-center">
+      <div class="text-xs text-slate-400">Економія</div>
+      <div class="text-3xl font-bold text-emerald-400 mt-1">-13</div>
+      <div class="text-xs text-slate-400">хв (13%)</div>
+    </div>
+  </div>
+
+  <div class="bg-slate-800/60 glow rounded-xl p-5 mb-4 markdown">
+    <h2>1. Схема базування</h2>
+    <div class="text-sm text-slate-300 space-y-2">
+      <p><strong class="accent">Установ А (права сторона):</strong> Патрон 3-кулачковий за ø90 (L=60 мм, гартована зона — безпечно) + задній обертовий центр. Люнет на ø90.</p>
+      <p><strong class="accent">Установ Б (переворот):</strong> Патрон за ø80 h9 (з прокладкою, щоб не деформувати) + задній центр. Люнет переставляється на ø90 з іншого боку.</p>
+    </div>
+
+    <h2>2. Режими різання (hard turning, 56-60 HRC)</h2>
+    <div class="overflow-x-auto">
+    <table>
+      <thead><tr><th>№</th><th>Операція</th><th>Інструмент</th><th>D</th><th>V</th><th>n</th><th>S</th><th>t</th><th>To</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Підрізка торця</td><td>CBN: CNGA 120408</td><td>80</td><td>120</td><td>480</td><td>0.08</td><td>0.2</td><td>0.8</td></tr>
+        <tr><td>2</td><td>Чорн. ø80→ø70</td><td>CBN: CNGA 120408</td><td>78</td><td>110</td><td>450</td><td>0.12</td><td>0.3</td><td>15.2</td></tr>
+        <tr><td>3</td><td>Чист. ø70 f7</td><td>CBN: DNGA 150408</td><td>70</td><td>180</td><td>820</td><td>0.08</td><td>0.12</td><td>3.6</td></tr>
+        <tr><td>4</td><td>Чист. ø65 h9</td><td>CBN: DNGA 150408</td><td>65</td><td>170</td><td>830</td><td>0.08</td><td>0.10</td><td>4.2</td></tr>
+        <tr><td>5</td><td>Чист. ø80 h9</td><td>CBN: DNGA 150408</td><td>80</td><td>180</td><td>720</td><td>0.07</td><td>0.10</td><td>5.8</td></tr>
+        <tr><td>6</td><td>Канавки Б,В,Г,Д</td><td>CBN: TDXU 4E-04</td><td>70</td><td>90</td><td>410</td><td>0.05</td><td>—</td><td>6.2</td></tr>
+        <tr><td>7</td><td>Різьба M64x2</td><td>Різьбова CBN</td><td>64</td><td>80</td><td>400</td><td>2.0</td><td>—</td><td>2.4</td></tr>
+        <tr><td>8</td><td>Різьба M65x1.5</td><td>Різьбова CBN</td><td>65</td><td>80</td><td>390</td><td>1.5</td><td>—</td><td>2.1</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="text-xs text-slate-400 mt-2">n = 1000·V/(π·D) · To = L/(n·S) · Перевірка Ra = S²/(8·r)</p>
+
+    <h2>3. Рекомендації оптимізації</h2>
+    <table>
+      <thead><tr><th>Зміна</th><th>Було</th><th>Стало</th><th>Економія</th><th>Ризик</th></tr></thead>
+      <tbody>
+        <tr><td>Оптимізація порядку переходів</td><td>—</td><td>—</td><td>-4 хв</td><td>Немає</td></tr>
+        <tr><td>Збільшення V чист. 150→180</td><td>150</td><td>180</td><td>-3 хв</td><td>Контроль Ra</td></tr>
+        <tr><td>Канавки одним інструментом</td><td>3 зміни</td><td>1</td><td>-2 хв</td><td>Підбір гео</td></tr>
+        <tr><td>Сухий різ замість емульсії</td><td>емульсія</td><td>сухо/повітря</td><td>-2 хв</td><td>Обов'язково для CBN</td></tr>
+        <tr><td>Скорочення вимірювань</td><td>10</td><td>6</td><td>-2 хв</td><td>Контроль першої партії</td></tr>
+      </tbody>
+    </table>
+
+    <h2>4. Витрати інструменту на партію 50 шт</h2>
+    <div class="text-sm text-slate-300">
+      <p>CBN CNGA 120408 (чорн.): стійкість ~45 хв, знадобиться <strong class="accent">3 шт</strong> на партію. У наявності достатньо.</p>
+      <p>CBN DNGA 150408 (чист.): стійкість ~60 хв, знадобиться <strong class="accent">2 шт</strong>.</p>
+      <p class="text-amber-400 text-xs mt-2">⚠ Це hard turning. Твердосплавні пластини KCU10/DNMG з первинного списку НЕ застосовувати — ламаються при HRC&gt;45.</p>
+    </div>
+  </div>
+
+  <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4 flex items-start gap-3">
+    <div class="text-red-400 text-xl">🛡</div>
+    <div class="text-sm">
+      <div class="font-semibold text-red-400 mb-1">Валідатор безпеки пройшов</div>
+      <div class="text-slate-300 space-y-1">
+        <div>✓ Всі n ≤ 4000 об/хв (max верстата)</div>
+        <div>✓ Потужність різання P ≤ 18 кВт (max 26 кВт)</div>
+        <div>✓ Інструмент сумісний з HRC 56-60 (CBN)</div>
+        <div>✓ Глибини різання в межах пластин (t ≤ 0.4 мм)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex gap-2 flex-wrap">
+    <button class="btn-primary">На тестування →</button>
+    <button class="btn-secondary">Додати коментар</button>
+    <button class="btn-secondary">Завантажити в ЧПУ (G-код Fanuc)</button>
+  </div>
+</section>
+
+<!-- =============== KNOWLEDGE =============== -->
+<section id="knowledge" class="screen">
+  <h1 class="text-2xl font-bold mb-1">База знань</h1>
+  <p class="text-slate-400 text-sm mb-6">Кожен затверджений проєкт потрапляє в контекст AI для наступних завдань. Без ML — просто правильне використання досвіду.</p>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-3xl font-bold accent">8</div>
+      <div class="text-xs text-slate-400 mt-1">Затверджено проєктів</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-3xl font-bold accent">147</div>
+      <div class="text-xs text-slate-400 mt-1">Хвилин зекономлено</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-3xl font-bold accent">18%</div>
+      <div class="text-xs text-slate-400 mt-1">Середня оптимізація</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="text-3xl font-bold accent">₴82к</div>
+      <div class="text-xs text-slate-400 mt-1">Умовна економія</div>
+    </div>
+  </div>
+
+  <div class="bg-slate-800/60 glow rounded-xl p-5 mb-4">
+    <h2 class="font-semibold mb-3">Як AI навчається (5 кроків)</h2>
+    <div class="space-y-2 text-sm">
+      <div class="flex gap-3"><div class="w-6 h-6 rounded-full accent-bg flex items-center justify-center text-xs font-bold flex-shrink-0">1</div><div>Технолог створює проєкт, AI дає рекомендації</div></div>
+      <div class="flex gap-3"><div class="w-6 h-6 rounded-full accent-bg flex items-center justify-center text-xs font-bold flex-shrink-0">2</div><div>Тестування на верстаті — фіксується реальний час</div></div>
+      <div class="flex gap-3"><div class="w-6 h-6 rounded-full accent-bg flex items-center justify-center text-xs font-bold flex-shrink-0">3</div><div>Технолог пише коментарі (вібрації, знос, нюанси)</div></div>
+      <div class="flex gap-3"><div class="w-6 h-6 rounded-full accent-bg flex items-center justify-center text-xs font-bold flex-shrink-0">4</div><div>Проєкт затверджується — зберігається в БД</div></div>
+      <div class="flex gap-3"><div class="w-6 h-6 rounded-full accent-bg flex items-center justify-center text-xs font-bold flex-shrink-0">5</div><div>Наступний проєкт на цьому верстаті: AI бачить попередній досвід і коригує рекомендації</div></div>
+    </div>
+  </div>
+
+  <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Затверджені проєкти</h2>
+  <div class="space-y-2">
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="font-semibold text-sm">Вал проміжний ø65</div>
+          <div class="text-xs text-slate-400 mt-1">HAAS ST-20 · 40Х · партія 100</div>
+        </div>
+        <span class="chip bg-emerald-500/10 text-emerald-400">APPROVED</span>
+      </div>
+      <div class="text-xs text-slate-400 mt-2">AI: 36 хв · Реально: 34 хв · Коментар: «Подача на чист. краще 0.09, не 0.12 — вібрації»</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="font-semibold text-sm">Фланець ø220</div>
+          <div class="text-xs text-slate-400 mt-1">DMG CTX 310 · AISI 304 · партія 40</div>
+        </div>
+        <span class="chip bg-emerald-500/10 text-emerald-400">APPROVED</span>
+      </div>
+      <div class="text-xs text-slate-400 mt-2">AI: 22 хв · Реально: 21 хв · Коментар: «CCMT пластина ідеальна для нержавійки»</div>
+    </div>
+    <div class="bg-slate-800/60 glow rounded-xl p-4">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="font-semibold text-sm">Втулка підшипника</div>
+          <div class="text-xs text-slate-400 mt-1">PINACHO STH 400 · 38Х2Н2МА · партія 25</div>
+        </div>
+        <span class="chip bg-emerald-500/10 text-emerald-400">APPROVED</span>
+      </div>
+      <div class="text-xs text-slate-400 mt-2">AI: 19 хв · Реально: 19 хв · Коментар: «точно»</div>
+    </div>
+  </div>
+</section>
+
+</main>
+<script>
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===id));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function startRecognize(){
+  document.getElementById('rec-upload').classList.add('hidden');
+  document.getElementById('rec-loading').classList.remove('hidden');
+  const stages = ['Зчитування PDF','Vision-аналіз креслення','Витягування розмірів','Перевірка допусків','Валідація JSON'];
+  let i=0;
+  const stageEl = document.getElementById('rec-stage');
+  const iv = setInterval(()=>{ i++; if(i<stages.length){ stageEl.textContent=stages[i]; } else { clearInterval(iv); } }, 650);
+  setTimeout(()=>{
+    document.getElementById('rec-loading').classList.add('hidden');
+    document.getElementById('rec-result').classList.remove('hidden');
+  }, 3200);
+}
+function resetRecognize(){
+  document.getElementById('rec-upload').classList.remove('hidden');
+  document.getElementById('rec-loading').classList.add('hidden');
+  document.getElementById('rec-result').classList.add('hidden');
+}
+</script>
+</body>
+</html>
